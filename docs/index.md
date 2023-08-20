@@ -1,7 +1,7 @@
 # Introduction
 
-`doobie-typesafe` is a typesafe wrapper for [doobie](https://tpolecat.github.io/doobie/) that allows you to write 
-queries in a typesafe way.
+[doobie-typesafe](https://github.com/arturaz/doobie-typesafe) is a typesafe wrapper for [doobie](https://tpolecat.github.io/doobie/) that allows you 
+to write queries in a typesafe way.
 
 Goals of this library:
 
