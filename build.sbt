@@ -1,5 +1,8 @@
 ThisBuild / tlBaseVersion := "0.1"
 
+ThisBuild / organization := "io.github.arturaz"
+ThisBuild / organizationName := "arturaz"
+
 ThisBuild / startYear := Some(2023)
 ThisBuild / licenses := Seq(License.MIT)
 ThisBuild / developers ++= List(
