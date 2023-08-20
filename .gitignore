@@ -1,0 +1,13 @@
+target
+
+/.idea
+/.vscode
+
+# Scala build server files: https://scalacenter.github.io/bloop/
+# https://www.scala-lang.org/blog/2020/10/27/bsp-in-sbt.html
+.bloop
+/.bsp
+
+# Scala Metals files: Scala language server with rich IDE features, https://scalameta.org/metals/
+/.metals
+metals.sbt
