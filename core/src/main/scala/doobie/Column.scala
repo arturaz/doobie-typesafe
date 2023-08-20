@@ -59,9 +59,11 @@ case class Column[A](
   override lazy val columns: NonEmptyVector[Column[?]] = NonEmptyVector.of(this)
 
   /** Returns a tuple of `(column_name, A)`. */
+  @targetName("bindColumn")
   inline def -->(a: A): (Fragment, Fragment) = (name, fr0"$a")
 
   /** Returns a tuple of `(column_name, A)`. */
+  @targetName("bindColumnTypedFragment")
   inline def -->(a: TypedFragment[A]): (Fragment, Fragment) = (name, a)
   
   /** For use in `UPDATE table_name SET name = ?` queries. */
@@ -82,30 +84,49 @@ case class Column[A](
   }
 
   /** Returns a `column_name = $a` [[Fragment]]. */
+  @targetName("equalsColumn")
   def ===(a: Column[A]): TypedFragment[Boolean] = fr0"$name = $a"
 
   /** Returns a `column_name <> $a` [[Fragment]]. */
-  def !==(a: A): TypedFragment[Boolean] = fr0"$name <> $a"
+  @targetName("notEquals")
+  def !==(a: A): TypedFragment[Boolean] = {
+    // Ah, SQL is fun
+    if (a.isInstanceOf[None.type]) fr0"$name IS NOT NULL"
+    else fr0"$name <> $a"
+  }
 
   /** Returns a `column_name <> $a` [[Fragment]]. */
+  @targetName("notEqualsColumn")
   def !==(a: Column[A]): TypedFragment[Boolean] = fr0"$name <> $a"
 
+  @targetName("lessThan")
   def <(a: A): TypedFragment[Boolean] = fr0"$name < $a"
+  @targetName("lessThanTypedFragment")
   def <(a: TypedFragment[A]): TypedFragment[Boolean] = fr0"$name < $a"
 
+  @targetName("lessThanEqual")
   def <=(a: A): TypedFragment[Boolean] = fr0"$name <= $a"
+  @targetName("lessThanEqualTypedFragment")
   def <=(a: TypedFragment[A]): TypedFragment[Boolean] = fr0"$name <= $a"
 
+  @targetName("greaterThan")
   def >(a: A): TypedFragment[Boolean] = fr0"$name > $a"
+  @targetName("greaterThanTypedFragment")
   def >(a: TypedFragment[A]): TypedFragment[Boolean] = fr0"$name > $a"
 
+  @targetName("greaterThanEqual")
   def >=(a: A): TypedFragment[Boolean] = fr0"$name >= $a"
+  @targetName("greaterThanEqualTypedFragment")
   def >=(a: TypedFragment[A]): TypedFragment[Boolean] = fr0"$name >= $a"
 
+  @targetName("plus")
   def +(a: A): TypedFragment[A] = fr0"$name + $a"
+  @targetName("plusTypedFragment")
   def +(a: TypedFragment[A]): TypedFragment[A] = fr0"$name + $a"
 
+  @targetName("minus")
   def -(a: A): TypedFragment[A] = fr0"$name - $a"
+  @targetName("minusTypedFragment")
   def -(a: TypedFragment[A]): TypedFragment[A] = fr0"$name - $a"
 
   /** Returns a `column_name IN ($values)` [[Fragment]]. */
