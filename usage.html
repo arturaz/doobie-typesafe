@@ -141,37 +141,37 @@
 </span><span class="keyword">val</span><span> </span><span class="identifier">querySql</span><span> = </span><span class="string-literal">sql&quot;SELECT </span><span class="substitution">$columns</span><span class="string-literal"> FROM </span><span class="substitution">$t</span><span class="string-literal"> WHERE </span><span class="substitution">${t.id === 42}</span><span class="string-literal">&quot;</span><span>
 </span><span class="comment">// querySql: Fragment = Fragment(&quot;SELECT first_name, last_name FROM users WHERE id = ?&quot;)
 </span><span class="keyword">val</span><span> </span><span class="identifier">query</span><span> = </span><span class="identifier">querySql</span><span>.</span><span class="identifier">queryOf</span><span>(</span><span class="identifier">columns</span><span>)
-</span><span class="comment">// query: Query0[Tuple2[String, String]] = doobie.util.query$Query$$anon$5@4e890237
+</span><span class="comment">// query: Query0[Tuple2[String, String]] = doobie.util.query$Query$$anon$5@4b11533d
 </span><span>
 </span><span class="keyword">val</span><span> </span><span class="identifier">notEqualQuerySql</span><span> = </span><span class="string-literal">sql&quot;SELECT </span><span class="substitution">$columns</span><span class="string-literal"> FROM </span><span class="substitution">$t</span><span class="string-literal"> WHERE </span><span class="substitution">${t.id !== 42}</span><span class="string-literal">&quot;</span><span>
 </span><span class="comment">// notEqualQuerySql: Fragment = Fragment(&quot;SELECT first_name, last_name FROM users WHERE id &lt;&gt; ?&quot;)
 </span><span class="keyword">val</span><span> </span><span class="identifier">notEqualQuery</span><span> = </span><span class="identifier">querySql</span><span>.</span><span class="identifier">queryOf</span><span>(</span><span class="identifier">columns</span><span>)
-</span><span class="comment">// notEqualQuery: Query0[Tuple2[String, String]] = doobie.util.query$Query$$anon$5@528b6a56
+</span><span class="comment">// notEqualQuery: Query0[Tuple2[String, String]] = doobie.util.query$Query$$anon$5@1fd84748
 </span><span>
 </span><span class="keyword">val</span><span> </span><span class="identifier">multiQuerySql</span><span> = </span><span class="string-literal">sql&quot;SELECT </span><span class="substitution">$columns</span><span class="string-literal"> FROM </span><span class="substitution">$t</span><span class="string-literal"> WHERE </span><span class="substitution">${t.id in Vector(1, 2, 3)}</span><span class="string-literal">&quot;</span><span>
 </span><span class="comment">// multiQuerySql: Fragment = Fragment(&quot;SELECT first_name, last_name FROM users WHERE id IN (?,?,?)&quot;)
 </span><span class="keyword">val</span><span> </span><span class="identifier">multiQuery</span><span> = </span><span class="identifier">multiQuerySql</span><span>.</span><span class="identifier">queryOf</span><span>(</span><span class="identifier">columns</span><span>)
-</span><span class="comment">// multiQuery: Query0[Tuple2[String, String]] = doobie.util.query$Query$$anon$5@57377811
+</span><span class="comment">// multiQuery: Query0[Tuple2[String, String]] = doobie.util.query$Query$$anon$5@53c00d51
 </span><span>
 </span><span class="keyword">val</span><span> </span><span class="identifier">notInMultiQuerySql</span><span> = </span><span class="string-literal">sql&quot;SELECT </span><span class="substitution">$columns</span><span class="string-literal"> FROM </span><span class="substitution">$t</span><span class="string-literal"> WHERE </span><span class="substitution">${t.id notIn Vector(1, 2, 3)}</span><span class="string-literal">&quot;</span><span>
 </span><span class="comment">// notInMultiQuerySql: Fragment = Fragment(&quot;SELECT first_name, last_name FROM users WHERE id NOT IN (?,?,?)&quot;)
 </span><span class="keyword">val</span><span> </span><span class="identifier">notInMultiQuery</span><span> = </span><span class="identifier">multiQuerySql</span><span>.</span><span class="identifier">queryOf</span><span>(</span><span class="identifier">columns</span><span>)
-</span><span class="comment">// notInMultiQuery: Query0[Tuple2[String, String]] = doobie.util.query$Query$$anon$5@7a74fcf0
+</span><span class="comment">// notInMultiQuery: Query0[Tuple2[String, String]] = doobie.util.query$Query$$anon$5@504f0c34
 </span><span>
 </span><span class="keyword">val</span><span> </span><span class="identifier">hasNoNicknameQuerySql</span><span> = </span><span class="string-literal">sql&quot;SELECT </span><span class="substitution">$columns</span><span class="string-literal"> FROM </span><span class="substitution">$t</span><span class="string-literal"> WHERE </span><span class="substitution">${t.nickname === None}</span><span class="string-literal">&quot;</span><span>
 </span><span class="comment">// hasNoNicknameQuerySql: Fragment = Fragment(&quot;SELECT first_name, last_name FROM users WHERE nickname IS NULL&quot;)
 </span><span class="keyword">val</span><span> </span><span class="identifier">hasNoNicknameQuery</span><span> = </span><span class="identifier">hasNoNicknameQuerySql</span><span>.</span><span class="identifier">queryOf</span><span>(</span><span class="identifier">columns</span><span>)
-</span><span class="comment">// hasNoNicknameQuery: Query0[Tuple2[String, String]] = doobie.util.query$Query$$anon$5@7ceac133
+</span><span class="comment">// hasNoNicknameQuery: Query0[Tuple2[String, String]] = doobie.util.query$Query$$anon$5@110635bb
 </span><span>
 </span><span class="keyword">val</span><span> </span><span class="identifier">hasNicknameQuerySql</span><span> = </span><span class="string-literal">sql&quot;SELECT </span><span class="substitution">$columns</span><span class="string-literal"> FROM </span><span class="substitution">$t</span><span class="string-literal"> WHERE </span><span class="substitution">${t.nickname !== None}</span><span class="string-literal">&quot;</span><span>
 </span><span class="comment">// hasNicknameQuerySql: Fragment = Fragment(&quot;SELECT first_name, last_name FROM users WHERE nickname IS NOT NULL&quot;)
 </span><span class="keyword">val</span><span> </span><span class="identifier">hasNicknameQuery</span><span> = </span><span class="identifier">hasNicknameQuerySql</span><span>.</span><span class="identifier">queryOf</span><span>(</span><span class="identifier">columns</span><span>)
-</span><span class="comment">// hasNicknameQuery: Query0[Tuple2[String, String]] = doobie.util.query$Query$$anon$5@75badd22
+</span><span class="comment">// hasNicknameQuery: Query0[Tuple2[String, String]] = doobie.util.query$Query$$anon$5@4cb9c2d4
 </span><span>
 </span><span class="keyword">val</span><span> </span><span class="identifier">hasSpecificNicknameQuerySql</span><span> = </span><span class="string-literal">sql&quot;SELECT </span><span class="substitution">$columns</span><span class="string-literal"> FROM </span><span class="substitution">$t</span><span class="string-literal"> WHERE </span><span class="substitution">${t.nickname === Some(&quot;Johnny&quot;)}</span><span class="string-literal">&quot;</span><span>
 </span><span class="comment">// hasSpecificNicknameQuerySql: Fragment = Fragment(&quot;SELECT first_name, last_name FROM users WHERE nickname = ?&quot;)
 </span><span class="keyword">val</span><span> </span><span class="identifier">hasSpecificNicknameQuery</span><span> = </span><span class="identifier">hasSpecificNicknameQuerySql</span><span>.</span><span class="identifier">queryOf</span><span>(</span><span class="identifier">columns</span><span>)
-</span><span class="comment">// hasSpecificNicknameQuery: Query0[Tuple2[String, String]] = doobie.util.query$Query$$anon$5@19a1d474</span></code></pre>
+</span><span class="comment">// hasSpecificNicknameQuery: Query0[Tuple2[String, String]] = doobie.util.query$Query$$anon$5@1f40f497</span></code></pre>
         <p>Take note that:</p>
         <ul>
           <li>Column types are inferred from the column definitions.</li>
@@ -220,7 +220,7 @@
   </span><span class="string-literal">sql&quot;SELECT </span><span class="substitution">$columns</span><span class="string-literal"> FROM </span><span class="substitution">$u</span><span class="string-literal"> INNER JOIN </span><span class="substitution">$a</span><span class="string-literal"> ON </span><span class="substitution">${u.c(_.id) === a.c(_.userId)}</span><span class="string-literal"> WHERE </span><span class="substitution">${u.c(_.id) === id}</span><span class="string-literal">&quot;</span><span>
 </span><span class="comment">// query1Sql: Fragment = Fragment(&quot;SELECT u.first_name, u.last_name, a.street, a.city FROM users AS u INNER JOIN addresses AS a ON u.id = a.user_id WHERE u.id = ?&quot;)
 </span><span class="keyword">val</span><span> </span><span class="identifier">query1</span><span> = </span><span class="identifier">query1Sql</span><span>.</span><span class="identifier">queryOf</span><span>(</span><span class="identifier">columns</span><span>)
-</span><span class="comment">// query1: Query0[Tuple4[String, String, String, String]] = doobie.util.query$Query$$anon$5@36fcb293
+</span><span class="comment">// query1: Query0[Tuple4[String, String, String, String]] = doobie.util.query$Query$$anon$5@3c49cfd9
 </span><span>
 </span><span class="comment">// Alternatively, instead of writing `u.c(_.id)` you can use `u(_.id)`, however that is less typesafe, as `apply` 
 // accepts any `SQLDefinition`, not just a `Column`.
@@ -228,7 +228,7 @@
   </span><span class="string-literal">sql&quot;SELECT </span><span class="substitution">$columns</span><span class="string-literal"> FROM </span><span class="substitution">$u</span><span class="string-literal"> INNER JOIN </span><span class="substitution">$a</span><span class="string-literal"> ON </span><span class="substitution">${u(_.id)}</span><span class="string-literal"> = </span><span class="substitution">${a(_.userId)}</span><span class="string-literal"> WHERE </span><span class="substitution">${u.c(_.id) === id}</span><span class="string-literal">&quot;</span><span>
 </span><span class="comment">// query2Sql: Fragment = Fragment(&quot;SELECT u.first_name, u.last_name, a.street, a.city FROM users AS u INNER JOIN addresses AS a ON u.id = a.user_id WHERE u.id = ?&quot;)
 </span><span class="keyword">val</span><span> </span><span class="identifier">query2</span><span> = </span><span class="identifier">query2Sql</span><span>.</span><span class="identifier">queryOf</span><span>(</span><span class="identifier">columns</span><span>)
-</span><span class="comment">// query2: Query0[Tuple4[String, String, String, String]] = doobie.util.query$Query$$anon$5@3bc6beb2</span></code></pre>
+</span><span class="comment">// query2: Query0[Tuple4[String, String, String, String]] = doobie.util.query$Query$$anon$5@d64c681</span></code></pre>
         
         <h2 id="composite-columns" class="section"><a class="anchor-link left" href="#composite-columns"><i class="icofont-laika link">&#xef71;</i></a>Composite Columns</h2>
         <p>You will often need to bundle several columns in the table as a Scala data structure. For example, you might want to
@@ -250,7 +250,7 @@
 </span><span class="keyword">val</span><span> </span><span class="identifier">querySql</span><span> = </span><span class="string-literal">sql&quot;SELECT </span><span class="substitution">$columns</span><span class="string-literal"> FROM </span><span class="substitution">$t</span><span class="string-literal"> WHERE </span><span class="substitution">${t.id === id}</span><span class="string-literal">&quot;</span><span>
 </span><span class="comment">// querySql: Fragment = Fragment(&quot;SELECT first_name, last_name, nickname FROM users WHERE id = ?&quot;)
 </span><span class="keyword">val</span><span> </span><span class="identifier">query</span><span> = </span><span class="identifier">querySql</span><span>.</span><span class="identifier">queryOf</span><span>(</span><span class="identifier">columns</span><span>)
-</span><span class="comment">// query: Query0[Names] = doobie.util.query$Query$$anon$5@38e9fcfb</span></code></pre>
+</span><span class="comment">// query: Query0[Names] = doobie.util.query$Query$$anon$5@48094ba8</span></code></pre>
         <p>You can also use the <code>SQLDefinition</code> as another column in <code>Columns</code>:</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">id</span><span> = </span><span class="number-literal">42</span><span>
 </span><span class="comment">// id: Int = 42
@@ -262,7 +262,7 @@
 </span><span class="keyword">val</span><span> </span><span class="identifier">querySql</span><span> = </span><span class="string-literal">sql&quot;SELECT </span><span class="substitution">$columns</span><span class="string-literal"> FROM </span><span class="substitution">$t</span><span class="string-literal"> WHERE </span><span class="substitution">${t.id === id}</span><span class="string-literal">&quot;</span><span>
 </span><span class="comment">// querySql: Fragment = Fragment(&quot;SELECT id, first_name, last_name, nickname FROM users WHERE id = ?&quot;)
 </span><span class="keyword">val</span><span> </span><span class="identifier">query</span><span> = </span><span class="identifier">querySql</span><span>.</span><span class="identifier">queryOf</span><span>(</span><span class="identifier">columns</span><span>)
-</span><span class="comment">// query: Query0[Tuple2[Int, Names]] = doobie.util.query$Query$$anon$5@6bd2a95f</span></code></pre>
+</span><span class="comment">// query: Query0[Tuple2[Int, Names]] = doobie.util.query$Query$$anon$5@3acc6277</span></code></pre>
         <p>Often you will want to define the <code>case class</code> in the <code>TableDefinition</code> object itself. There is a helper for that
         use case:</p>
         <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">doobie</span><span>.*
@@ -290,7 +290,7 @@
 </span><span class="keyword">val</span><span> </span><span class="identifier">querySql</span><span> = </span><span class="string-literal">sql&quot;SELECT </span><span class="substitution">$columns</span><span class="string-literal"> FROM </span><span class="substitution">$t</span><span class="string-literal"> WHERE </span><span class="substitution">${t.id === id}</span><span class="string-literal">&quot;</span><span>
 </span><span class="comment">// querySql: Fragment = Fragment(&quot;SELECT id, first_name, last_name, nickname FROM users WHERE id = ?&quot;)
 </span><span class="keyword">val</span><span> </span><span class="identifier">query</span><span> = </span><span class="identifier">querySql</span><span>.</span><span class="identifier">queryOf</span><span>(</span><span class="identifier">columns</span><span>)
-</span><span class="comment">// query: Query0[Tuple2[Int, Names]] = doobie.util.query$Query$$anon$5@656fa9b9</span></code></pre>
+</span><span class="comment">// query: Query0[Tuple2[Int, Names]] = doobie.util.query$Query$$anon$5@1137fb61</span></code></pre>
         <p>Ultimately, you will probably want to use a <code>case class</code> for the entire table row. You can do that as well:</p>
         <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">doobie</span><span>.*
 </span><span class="keyword">import</span><span> </span><span class="identifier">doobie</span><span>.</span><span class="identifier">implicits</span><span>.*
@@ -320,16 +320,16 @@
 </span><span class="keyword">val</span><span> </span><span class="identifier">querySql</span><span> = </span><span class="string-literal">sql&quot;SELECT </span><span class="substitution">$columns</span><span class="string-literal"> FROM </span><span class="substitution">$t</span><span class="string-literal"> WHERE </span><span class="substitution">${t.id === id}</span><span class="string-literal">&quot;</span><span>
 </span><span class="comment">// querySql: Fragment = Fragment(&quot;SELECT id, first_name, last_name, nickname FROM users WHERE id = ?&quot;)
 </span><span class="keyword">val</span><span> </span><span class="identifier">query</span><span> = </span><span class="identifier">querySql</span><span>.</span><span class="identifier">queryOf</span><span>(</span><span class="identifier">columns</span><span>)
-</span><span class="comment">// query: Query0[Row] = doobie.util.query$Query$$anon$5@2bf1d933</span></code></pre>
+</span><span class="comment">// query: Query0[Row] = doobie.util.query$Query$$anon$5@5da0666</span></code></pre>
         <p>The <code>TableDefinition.RowHelpers</code> trait provides a couple of helpers, such as:</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="type-name">Users</span><span>.</span><span class="type-name">Row</span><span>.</span><span class="identifier">insert</span><span>
-</span><span class="comment">// res2: Update[Row] = doobie.util.update$Update$$anon$6@5c08e692
+</span><span class="comment">// res2: Update[Row] = doobie.util.update$Update$$anon$6@70c497e
 </span><span class="type-name">Users</span><span>.</span><span class="type-name">Row</span><span>.</span><span class="identifier">insertOnConflictDoNothing</span><span>(</span><span class="type-name">Columns</span><span>(</span><span class="type-name">Users</span><span>.</span><span class="type-name">Names</span><span>))
-</span><span class="comment">// res3: Update[Row] = doobie.util.update$Update$$anon$6@22ee241d
+</span><span class="comment">// res3: Update[Row] = doobie.util.update$Update$$anon$6@5e8a4c32
 </span><span class="type-name">Users</span><span>.</span><span class="type-name">Row</span><span>.</span><span class="identifier">insertOnConflictDoNothing0</span><span>
-</span><span class="comment">// res4: Update[Row] = doobie.util.update$Update$$anon$6@3ad46398
+</span><span class="comment">// res4: Update[Row] = doobie.util.update$Update$$anon$6@70485871
 </span><span class="type-name">Users</span><span>.</span><span class="type-name">Row</span><span>.</span><span class="identifier">selectAll</span><span>
-</span><span class="comment">// res5: Query0[Row] = doobie.util.query$Query$$anon$5@1fc91db0</span></code></pre>
+</span><span class="comment">// res5: Query0[Row] = doobie.util.query$Query$$anon$5@25f48928</span></code></pre>
         <p>Check their source code for the documentation.</p>
         
         <h2 id="inserting" class="section"><a class="anchor-link left" href="#inserting"><i class="icofont-laika link">&#xef71;</i></a>Inserting</h2>
@@ -355,7 +355,7 @@
 </span><span class="identifier">insertInto</span><span>(</span><span class="type-name">Users</span><span>, </span><span class="type-name">Users</span><span>.</span><span class="type-name">Row</span><span> ==&gt; </span><span class="type-name">Users</span><span>.</span><span class="type-name">Row</span><span>(</span><span class="number-literal">42</span><span>, </span><span class="type-name">Users</span><span>.</span><span class="type-name">Names</span><span>(</span><span class="string-literal">&quot;John&quot;</span><span>, </span><span class="string-literal">&quot;Doe&quot;</span><span>, </span><span class="type-name">Some</span><span>(</span><span class="string-literal">&quot;Johnny&quot;</span><span>))))
 </span><span class="comment">// res8: Fragment = Fragment(&quot;INSERT INTO users (id, first_name, last_name, nickname) VALUES (?, ?, ?, ?)&quot;)
 </span><span class="type-name">Users</span><span>.</span><span class="type-name">Row</span><span>.</span><span class="identifier">insert</span><span>.</span><span class="identifier">toUpdate0</span><span>(</span><span class="type-name">Users</span><span>.</span><span class="type-name">Row</span><span>(</span><span class="number-literal">42</span><span>, </span><span class="type-name">Users</span><span>.</span><span class="type-name">Names</span><span>(</span><span class="string-literal">&quot;John&quot;</span><span>, </span><span class="string-literal">&quot;Doe&quot;</span><span>, </span><span class="type-name">Some</span><span>(</span><span class="string-literal">&quot;Johnny&quot;</span><span>))))
-</span><span class="comment">// res9: Update0 = doobie.util.update$Update$$anon$4@4ee54ad
+</span><span class="comment">// res9: Update0 = doobie.util.update$Update$$anon$4@40d67351
 </span><span>
 </span><span class="comment">// Batch insert.
 </span><span class="type-name">Users</span><span>.</span><span class="type-name">Row</span><span>.</span><span class="identifier">insert</span><span>.</span><span class="identifier">updateMany</span><span>(</span><span class="type-name">NonEmptyVector</span><span>.</span><span class="identifier">of</span><span>(
@@ -364,7 +364,7 @@
 ))
 </span><span class="comment">// res10: Free[[A &gt;: Nothing &lt;: Any] =&gt; ConnectionOp[A], Int] = Suspend(
 //   a = Uncancelable(
-//     body = cats.effect.kernel.MonadCancel$$Lambda$12227/1975357928@577356e1
+//     body = cats.effect.kernel.MonadCancel$$Lambda$11444/838030085@4c314ca5
 //   )
 // )</span></code></pre>
         
