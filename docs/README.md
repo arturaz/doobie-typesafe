@@ -20,11 +20,20 @@ Add the following to your `build.sbt`:
 libraryDependencies += "io.github.arturaz" % "doobie-typesafe" % "@VERSION@"
 ```
 
+The code from `main` branch can be obtained with:
+```scala
+resolvers ++= Resolver.sonatypeOssRepos("snapshots")
+libraryDependencies += "io.github.arturaz" % "doobie-typesafe" % "@SNAPSHOT_VERSION@"
+```
+
 **The library is only published for Scala 3** due to the use of 
 [Scala 3 match types](https://docs.scala-lang.org/scala3/reference/new-types/match-types.html).
 
 You can see all the published artifacts on 
-[Maven](https://mvnrepository.com/artifact/io.github.arturaz/doobie-typesafe_3).
+[MVN Repository](https://mvnrepository.com/artifact/io.github.arturaz/doobie-typesafe_3), 
+[Maven Central](https://search.maven.org/artifact/io.github.arturaz/doobie-typesafe_3),
+[Sonatype](https://oss.sonatype.org/#nexus-search;quick~doobie-typesafe) or
+[raw Maven repository](https://repo1.maven.org/maven2/io/github/arturaz/doobie-typesafe_3/).
 
 ## Credits
 
