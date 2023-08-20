@@ -11,7 +11,7 @@ ThisBuild / scalacOptions ++= Seq(
   "-language:implicitConversions"
 )
 
-ThisBuild / tlSitePublishBranch := Some("master")
+ThisBuild / tlSitePublishBranch := Some("main")
 
 lazy val root = tlCrossRootProject.aggregate(core, tests)
 
