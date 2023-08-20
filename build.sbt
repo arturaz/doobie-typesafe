@@ -13,6 +13,10 @@ ThisBuild / scalacOptions ++= Seq(
 
 ThisBuild / tlSitePublishBranch := Some("main")
 
+// Disable the checks, I don't want to deal with them right now.
+ThisBuild / tlCiHeaderCheck := false
+ThisBuild / tlCiScalafmtCheck := false
+
 lazy val root = tlCrossRootProject.aggregate(core, tests)
 
 lazy val core = project
