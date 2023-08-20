@@ -20,7 +20,7 @@ Add the following to your `build.sbt`:
 libraryDependencies += "io.github.arturaz" % "doobie-typesafe" % "@VERSION@"
 ```
 
-The library is only published for Scala 3 due to the use of 
+**The library is only published for Scala 3** due to the use of 
 [Scala 3 match types](https://docs.scala-lang.org/scala3/reference/new-types/match-types.html).
 
 You can see all the published artifacts on 
