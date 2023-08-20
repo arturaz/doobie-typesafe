@@ -20,6 +20,7 @@ object Users extends TableDefinition("users") {
 ## Querying
 
 ```scala mdoc:nest
+import doobie.*
 import doobie.implicits.*
 
 import Users as t
@@ -58,6 +59,8 @@ Take note that:
 Given that we have the following `addresses` table:
 
 ```scala mdoc
+import doobie.*
+
 object Addresses extends TableDefinition("addresses") {
   val id: Column[Int] = Column("id")
   val userId: Column[Int] = Column("user_id")
@@ -113,6 +116,9 @@ lazy val names: SQLDefinition[Names] = Composite((
 Then the `getUserQuery` can be rewritten as follows:
 
 ```scala mdoc:nest
+import doobie.*
+import doobie.implicits.*
+
 val id = 42
 import Users as t
 val columns = names
@@ -122,6 +128,9 @@ val query = querySql.queryOf(columns)
 
 You can also use the `SQLDefinition` as another column in `Columns`:
 ```scala mdoc:nest
+import doobie.*
+import doobie.implicits.*
+
 val id = 42
 import Users as t
 val columns = Columns((t.id, names))
@@ -240,6 +249,7 @@ Update is very similar to insert:
 
 ```scala mdoc
 import cats.data.NonEmptyVector
+import doobie.*
 import doobie.implicits.*
 
 
@@ -263,6 +273,7 @@ You can use the composite columns as well:
 
 ```scala mdoc
 import cats.data.NonEmptyVector
+import doobie.*
 import doobie.implicits.*
 
 sql"""
