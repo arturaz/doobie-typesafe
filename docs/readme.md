@@ -14,7 +14,7 @@ Non-goals:
 Add the following to your `build.sbt`:
 
 ```scala
-libraryDependencies += "com.github.arturaz" % "doobie-typesafe" % "@VERSION@"
+libraryDependencies += "io.github.arturaz" % "doobie-typesafe" % "@VERSION@"
 ```
 
 The library is only published for Scala 3 due to the use of 
