@@ -43,3 +43,9 @@ lazy val docs = project
   .in(file("site"))
   .dependsOn(core)
   .enablePlugins(TypelevelSitePlugin)
+  .settings(
+    scalacOptions --= Seq(
+      // Disable unused import warnings for the docs as they report false positives.
+      "-Wunused:imports",
+    )
+  )
