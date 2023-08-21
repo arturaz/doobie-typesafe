@@ -4,7 +4,7 @@
 
 You want to start by defining your SQL tables.
 
-The following defines a `users` table with `id` and `name` columns.
+The following defines a `users` table with `id`, `first_name`, `last_name` and `nickname` columns:
 
 ```scala mdoc
 import doobie.*
@@ -97,6 +97,9 @@ val query2Sql =
 val query2 = query2Sql.queryOf(columns)
 ```
 
+You probably want to check out the [doobieroll assembler](https://jatcwang.github.io/doobieroll/docs/assembler) to help
+you out with the joins as well.
+
 ## Composite Columns
 
 You will often need to bundle several columns in the table as a Scala data structure. For example, you might want to
@@ -113,7 +116,7 @@ lazy val names: SQLDefinition[Names] = Composite((
 ))(Names.apply)(Tuple.fromProductTyped)
 ```
 
-Then the `getUserQuery` can be rewritten as follows:
+Then we can query the composite column as follows:
 
 ```scala mdoc:nest
 import doobie.*
