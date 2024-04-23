@@ -17,13 +17,34 @@ Non-goals:
 Add the following to your `build.sbt`:
 
 ```scala
-libraryDependencies += "io.github.arturaz" % "doobie-typesafe" % "@VERSION@"
+libraryDependencies += "io.github.arturaz" %% "doobie-typesafe" % "@VERSION@"
+```
+
+Or `build.sc` if you are using [mill](https://mill-build.com):
+
+```scala
+override def ivyDeps = Agg(
+  ivy"io.github.arturaz::doobie-typesafe:@VERSION@"
+)
 ```
 
 The code from `main` branch can be obtained with:
 ```scala
 resolvers ++= Resolver.sonatypeOssRepos("snapshots")
-libraryDependencies += "io.github.arturaz" % "doobie-typesafe" % "@SNAPSHOT_VERSION@"
+libraryDependencies += "io.github.arturaz" %% "doobie-typesafe" % "@SNAPSHOT_VERSION@"
+```
+
+For [mill](https://mill-build.com):
+```scala
+  override def repositoriesTask = T.task {
+    super.repositoriesTask() ++ Seq(
+      coursier.Repositories.sonatype("snapshots")
+    )
+  }
+
+override def ivyDeps = Agg(
+  ivy"io.github.arturaz::doobie-typesafe:@SNAPSHOT_VERSION@"
+)
 ```
 
 **The library is only published for Scala 3** due to the use of 
