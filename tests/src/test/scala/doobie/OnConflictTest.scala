@@ -5,7 +5,7 @@ import doobie.implicits.*
 
 class OnConflictTest extends CatsEffectSuite {
   test("SQL generation") {
-    val t = Person as "t"
+    val t = Person `as` "t"
     val actual = sql"${
       insertInto(t, t(_.nameCol) ==> "Steve")
     } ON CONFLICT (${t(_.nameCol)}) DO UPDATE SET ${t(_.ageCol)} = ${t(_.ageCol)} + ${t(_.ageCol).excluded}"

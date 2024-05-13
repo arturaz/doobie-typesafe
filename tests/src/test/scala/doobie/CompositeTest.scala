@@ -31,14 +31,14 @@ class CompositeTest extends CatsEffectSuite with DBFixture with Helpers {
   }
 
   test("prefixedWith") {
-    val p = Person as "p"
+    val p = Person `as` "p"
     val expected = NonEmptyVector.of(p.c(_.nameCol) --> "Alice", p.c(_.ageCol) --> Age(42))
     val actual = person.prefixedWith("p") ==> Person("Alice", Age(42))
     assertEquals(actual.map(_.toString()), expected.map(_.toString()))
   }
 
   test("prefixedWith in SQL") {
-    val p = Person as "p"
+    val p = Person `as` "p"
     val expected = sql"SELECT p.name, p.age FROM person AS p".toString
     val actual = sql"SELECT ${p(_.nameCol)}, ${p(_.ageCol)} FROM $p".toString
     assertEquals(actual, expected)

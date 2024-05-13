@@ -5,7 +5,7 @@ import doobie.util.{DBFixture, Helpers}
 import munit.CatsEffectSuite
 
 class LeftJoinTest extends CatsEffectSuite with DBFixture with Helpers {
-  val withTable = db.mapAsync { xa =>
+  private val withTable = db.mapAsync { xa =>
     val io = for {
       _ <- sql"create table $Person ($nameCol text not null)".update.run
       _ <- sql"create table $Pets ($nameCol text not null, $pet1Col text not null, $pet2Col text)".update.run
@@ -24,8 +24,8 @@ class LeftJoinTest extends CatsEffectSuite with DBFixture with Helpers {
   }
 
   withTable.test("left join") { xa =>
-    val persons = Person as "person"
-    val pets = Pets as "pet"
+    val persons = Person `as` "person"
+    val pets = Pets `as` "pet"
     val columns = Columns((persons(_.nameCol), pets(_.pet1Col.option), pets(_.pet2Col)))
     val select =
       sql"SELECT $columns FROM $persons LEFT JOIN $pets ON ${persons.c(_.nameCol) === pets.c(_ => nameCol)}"

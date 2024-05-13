@@ -49,4 +49,4 @@ def updateTable[F[_]](table: TableName, columns: F[(Fragment, Fragment)])(using 
  * Overload of [[updateTable]] for convenience.
  */
 def updateTable(table: TableName, column1: (Fragment, Fragment), other: (Fragment, Fragment)*)(using Pos): Fragment =
-  updateTable(table, NonEmptyVector.of(column1, other:_*))
+  updateTable(table, NonEmptyVector.of(column1, other*))
