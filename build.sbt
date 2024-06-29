@@ -1,4 +1,4 @@
-ThisBuild / tlBaseVersion := "0.1"
+ThisBuild / tlBaseVersion := "0.2"
 
 ThisBuild / organization := "io.github.arturaz"
 ThisBuild / organizationName := "arturaz"
@@ -9,7 +9,7 @@ ThisBuild / developers ++= List(
   tlGitHubDev("arturaz", "Artūras Šlajus")
 )
 
-ThisBuild / scalaVersion := "3.4.1"
+ThisBuild / scalaVersion := "3.3.3"
 ThisBuild / scalacOptions ++= Seq(
   "-language:implicitConversions"
 )
@@ -30,7 +30,7 @@ lazy val core = project
     libraryDependencies ++= Seq(
       // https://mvnrepository.com/artifact/org.tpolecat/doobie-core
       "org.tpolecat" %% "doobie-core" % "1.0.0-RC5"
-    )
+    ),
   )
 
 lazy val tests = project
@@ -47,7 +47,7 @@ lazy val tests = project
       "org.typelevel" %% "munit-cats-effect" % "2.0.0-RC1" % Test,
       // https://mvnrepository.com/artifact/com.h2database/h2
       "com.h2database" % "h2" % "2.2.224" % Test,
-    )
+    ),
   )
 
 lazy val docs = project

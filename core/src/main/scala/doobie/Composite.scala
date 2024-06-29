@@ -146,4 +146,133 @@ object Composite {
       override def ===(value: R) = sqlDefinition === unmap(value)
       override def columns = sqlDefinition.columns
     }
+
+  /** 
+   * [[SQLDefinition]] when the element is defined by two [[Option]]al values. 
+   * 
+   * Usually the database constraints will enforce that both are either [[Some]] or [[None]].
+   * */
+  def fromMultiOption[A1, A2, R](
+    a1Def: SQLDefinition[Option[A1]],
+    a2Def: SQLDefinition[Option[A2]]
+  )(map: (A1, A2) => R)(unmap: R => (A1, A2)): SQLDefinition[Option[R]] =
+    apply((a1Def, a2Def)) { 
+      case (Some(a1), Some(a2)) => Some(map(a1, a2))
+      case _ => None
+    } {
+      case None => (None, None)
+      case Some(r) => 
+        val (a1, a2) = unmap(r)
+        (Some(a1), Some(a2))
+    }
+
+  /** 
+   * [[SQLDefinition]] when the element is defined by three [[Option]]al values. 
+   * 
+   * Usually the database constraints will enforce that both are either [[Some]] or [[None]].
+   * */
+  def fromMultiOption[A1, A2, A3, R](
+    a1Def: SQLDefinition[Option[A1]],
+    a2Def: SQLDefinition[Option[A2]],
+    a3Def: SQLDefinition[Option[A3]]
+  )(map: (A1, A2, A3) => R)(unmap: R => (A1, A2, A3)): SQLDefinition[Option[R]] =
+    apply((a1Def, a2Def, a3Def)) { 
+      case (Some(a1), Some(a2), Some(a3)) => Some(map(a1, a2, a3))
+      case _ => None
+    } {
+      case None => (None, None, None)
+      case Some(r) => 
+        val (a1, a2, a3) = unmap(r)
+        (Some(a1), Some(a2), Some(a3))
+    }
+
+  /** 
+   * [[SQLDefinition]] when the element is defined by four [[Option]]al values. 
+   * 
+   * Usually the database constraints will enforce that both are either [[Some]] or [[None]].
+   * */
+  def fromMultiOption[A1, A2, A3, A4, R](
+    a1Def: SQLDefinition[Option[A1]],
+    a2Def: SQLDefinition[Option[A2]],
+    a3Def: SQLDefinition[Option[A3]],
+    a4Def: SQLDefinition[Option[A4]]
+  )(map: (A1, A2, A3, A4) => R)(unmap: R => (A1, A2, A3, A4)): SQLDefinition[Option[R]] =
+    apply((a1Def, a2Def, a3Def, a4Def)) { 
+      case (Some(a1), Some(a2), Some(a3), Some(a4)) => Some(map(a1, a2, a3, a4))
+      case _ => None
+    } {
+      case None => (None, None, None, None)
+      case Some(r) => 
+        val (a1, a2, a3, a4) = unmap(r)
+        (Some(a1), Some(a2), Some(a3), Some(a4))
+    }
+
+  /** 
+   * [[SQLDefinition]] when the element is defined by five [[Option]]al values. 
+   * 
+   * Usually the database constraints will enforce that both are either [[Some]] or [[None]].
+   * */
+  def fromMultiOption[A1, A2, A3, A4, A5, R](
+    a1Def: SQLDefinition[Option[A1]],
+    a2Def: SQLDefinition[Option[A2]],
+    a3Def: SQLDefinition[Option[A3]],
+    a4Def: SQLDefinition[Option[A4]],
+    a5Def: SQLDefinition[Option[A5]]
+  )(map: (A1, A2, A3, A4, A5) => R)(unmap: R => (A1, A2, A3, A4, A5)): SQLDefinition[Option[R]] =
+    apply((a1Def, a2Def, a3Def, a4Def, a5Def)) { 
+      case (Some(a1), Some(a2), Some(a3), Some(a4), Some(a5)) => Some(map(a1, a2, a3, a4, a5))
+      case _ => None
+    } {
+      case None => (None, None, None, None, None)
+      case Some(r) => 
+        val (a1, a2, a3, a4, a5) = unmap(r)
+        (Some(a1), Some(a2), Some(a3), Some(a4), Some(a5))
+    }
+
+  /** 
+   * [[SQLDefinition]] when the element is defined by six [[Option]]al values. 
+   * 
+   * Usually the database constraints will enforce that both are either [[Some]] or [[None]].
+   * */
+  def fromMultiOption[A1, A2, A3, A4, A5, A6, R](
+    a1Def: SQLDefinition[Option[A1]],
+    a2Def: SQLDefinition[Option[A2]],
+    a3Def: SQLDefinition[Option[A3]],
+    a4Def: SQLDefinition[Option[A4]],
+    a5Def: SQLDefinition[Option[A5]],
+    a6Def: SQLDefinition[Option[A6]]
+  )(map: (A1, A2, A3, A4, A5, A6) => R)(unmap: R => (A1, A2, A3, A4, A5, A6)): SQLDefinition[Option[R]] =
+    apply((a1Def, a2Def, a3Def, a4Def, a5Def, a6Def)) { 
+      case (Some(a1), Some(a2), Some(a3), Some(a4), Some(a5), Some(a6)) => Some(map(a1, a2, a3, a4, a5, a6))  
+      case _ => None
+    } {
+      case None => (None, None, None, None, None, None)
+      case Some(r) => 
+        val (a1, a2, a3, a4, a5, a6) = unmap(r)
+        (Some(a1), Some(a2), Some(a3), Some(a4), Some(a5), Some(a6))
+    }
+
+  /** 
+   * [[SQLDefinition]] when the element is defined by seven [[Option]]al values. 
+   * 
+   * Usually the database constraints will enforce that both are either [[Some]] or [[None]].
+   * */
+  def fromMultiOption[A1, A2, A3, A4, A5, A6, A7, R](
+    a1Def: SQLDefinition[Option[A1]],
+    a2Def: SQLDefinition[Option[A2]],
+    a3Def: SQLDefinition[Option[A3]],
+    a4Def: SQLDefinition[Option[A4]],
+    a5Def: SQLDefinition[Option[A5]],
+    a6Def: SQLDefinition[Option[A6]],
+    a7Def: SQLDefinition[Option[A7]]
+  )(map: (A1, A2, A3, A4, A5, A6, A7) => R)(unmap: R => (A1, A2, A3, A4, A5, A6, A7)): SQLDefinition[Option[R]] =
+    apply((a1Def, a2Def, a3Def, a4Def, a5Def, a6Def, a7Def)) { 
+      case (Some(a1), Some(a2), Some(a3), Some(a4), Some(a5), Some(a6), Some(a7)) => Some(map(a1, a2, a3, a4, a5, a6, a7))
+      case _ => None
+    } {
+      case None => (None, None, None, None, None, None, None)
+      case Some(r) => 
+        val (a1, a2, a3, a4, a5, a6, a7) = unmap(r)
+        (Some(a1), Some(a2), Some(a3), Some(a4), Some(a5), Some(a6), Some(a7))
+    }
 }
