@@ -105,6 +105,11 @@ trait SQLDefinition[A] extends TypedMultiFragment[A] { self =>
 
   /** Returns [[Update]] for batch inserts into the given table. */
   def batchInsertSqlFor(t: TableName): Update[A] = Update[A](insertSqlFor(t).rawSql)
+
+  /** Generates a [[Fragment]] that sets all columns of the [[SQLDefinition]] to their excluded values. */
+  def setAllToExcluded: Fragment = {
+    columns.map(column => sql"$column = ${column.excluded}").intercalate(fr",")
+  }
 }
 object SQLDefinition {
   given [A](using definition: SQLDefinition[A]): Read[A] = definition.read
