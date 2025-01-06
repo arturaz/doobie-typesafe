@@ -48,7 +48,7 @@ case class Column[A](
   }
 
   /** Creates an [[Option]] version of the [[Column]], giving that it is not already an [[Option]]. */
-  def option[B](using @unused ng: NotGiven[A =:= Option[B]]): Column[Option[A]] =
+  override def option[B](using @unused ng: NotGiven[A =:= Option[B]]): Column[Option[A]] =
     Column[Option[A]](rawName, prefix)(using
       read = Read.fromGetOption(self.get),
       write = Write.fromPutOption(self.put)

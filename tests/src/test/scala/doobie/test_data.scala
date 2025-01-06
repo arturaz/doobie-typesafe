@@ -18,10 +18,11 @@ case class Pets(pet1: String, pet2: Option[String])
 object Pets extends TableDefinition("pets") {
   val pet1Col = Column[String]("pet1")
   val pet2Col = Column[Option[String]]("pet2")
+
+  lazy val Row: SQLDefinition[Pets] = Composite((pet1Col.sqlDef, pet2Col.sqlDef))(Pets.apply)(Tuple.fromProductTyped)
 }
 def pet1Col = Pets.pet1Col
 def pet2Col = Pets.pet2Col
-lazy val pets: SQLDefinition[Pets] = Composite((pet1Col.sqlDef, pet2Col.sqlDef))(Pets.apply)(Tuple.fromProductTyped)
 
 object Cars extends TableDefinition("cars") {
   val idCol = Column[Long]("id")

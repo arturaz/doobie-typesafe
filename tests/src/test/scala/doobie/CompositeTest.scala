@@ -78,7 +78,7 @@ class CompositeTest extends CatsEffectSuite with DBFixture with Helpers {
 class NestedCompositeTest extends CatsEffectSuite with DBFixture with Helpers {
   case class PersonWithPets(person: Person, pets: Pets)
   val personWithPets: SQLDefinition[PersonWithPets] =
-    Composite((person, pets))(PersonWithPets.apply)(Tuple.fromProductTyped)
+    Composite((person, Pets.Row))(PersonWithPets.apply)(Tuple.fromProductTyped)
   val personWithPetsTable = new TableDefinition("person_with_pets") {}
 
   test("sql") {

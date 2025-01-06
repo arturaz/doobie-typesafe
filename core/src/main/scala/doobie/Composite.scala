@@ -1,14 +1,22 @@
 package doobie
 
-import cats.data.NonEmptyVector
+import cats.data.{NonEmptyList, NonEmptyVector}
 import implicits.*
 
 import scala.Tuple.{InverseMap, IsMappedBy}
-import scala.annotation.targetName
+import scala.annotation.{targetName, unused}
+import scala.util.NotGiven
 import scala.util.control.NonFatal
 
 
 object Composite {
+  /**
+   * Removes the [[SQLDefinition]] wrapper from each member of the tuple.
+   *
+   * e.g. turns `(SQLDefinition[A], SQLDefinition[B])` into `(A, B)`.
+   **/
+  type TupleValues[T <: Tuple] = InverseMap[T, SQLDefinition]
+
   /**
    * Allows you to define a composite type that is composed of other [[SQLDefinition]]s.
    *
@@ -43,26 +51,44 @@ object Composite {
    * */
   def apply[T <: Tuple : IsMappedBy[SQLDefinition], R](
     sqlDefinitionsTuple: T
-  )(map: InverseMap[T, SQLDefinition] => R)(unmap: R => InverseMap[T, SQLDefinition]): SQLDefinition[R] =
+  )(map: TupleValues[T] => R)(unmap: R => TupleValues[T]): SQLDefinition[R] =
+    unsafe(
+      NonEmptyVector.fromVectorUnsafe(
+        sqlDefinitionsTuple.productIterator.map(_.asInstanceOf[SQLDefinition[?]]).toVector
+      )
+    )(iterator =>
+      map(Tuple.fromArray(iterator.toArray).asInstanceOf[TupleValues[T]])
+    )(r => unmap(r).productIterator)
+
+  /**
+   * Type-unsafe version of [[apply]].
+   *
+   * @param map Function to map the components that make up the composite type to the final result.
+   * @param unmap Function to map the final result to the components that make up the composite type.
+   **/
+  def unsafe[R](
+    sqlDefinitions: NonEmptyVector[SQLDefinition[?]]
+  )(map: Iterator[Any] => R)(unmap: R => Iterator[Any]): SQLDefinition[R] = {
+    val _sqlDefinitions = sqlDefinitions
+
     new SQLDefinition[R] { self =>
       override type Self[X] = SQLDefinition[X]
 
       override def toString = s"Composite(columns: ${columns.iterator.map(_.rawName).mkString(", ")})"
 
-      lazy val sqlDefinitions: Vector[SQLDefinition[?]] =
-        sqlDefinitionsTuple.productIterator.map(_.asInstanceOf[SQLDefinition[?]]).toVector
+      lazy val sqlDefinitions: NonEmptyVector[SQLDefinition[?]] = _sqlDefinitions
 
       /** Amount of results to skip from the [[ResultSet]] when reading the Nth tuple element. */
       lazy val sqlResultAccumulatedLengths: Vector[Int] =
-        sqlDefinitions.scanLeft(0)(_ + _.read.length).init
+        sqlDefinitions.toVector.scanLeft(0)(_ + _.read.length).init
 
       override lazy val columns: NonEmptyVector[Column[?]] =
-        NonEmptyVector.fromVectorUnsafe(sqlDefinitions.flatMap(_.columns.toVector))
+        sqlDefinitions.flatMap(_.columns)
 
       override lazy val read = new Read(
-        gets = sqlDefinitions.toList.flatMap(_.read.gets),
+        gets = sqlDefinitions.iterator.flatMap(_.read.gets).toList,
         unsafeGet = (rs, idx) => {
-          val values = Tuple.fromArray(sqlDefinitions.iterator.zip(sqlResultAccumulatedLengths).map { case (r, toSkip) =>
+          val iterator = sqlDefinitions.iterator.zip(sqlResultAccumulatedLengths).map { case (r, toSkip) =>
             val position = idx + toSkip
             try {
               r.read.unsafeGet(rs, position)
@@ -70,17 +96,17 @@ object Composite {
             catch { case NonFatal(e) =>
               throw new Exception(s"Error while reading $r at position $position from a ResultSet", e)
             }
-          }.toArray).asInstanceOf[InverseMap[T, SQLDefinition]]
+          }
 
-          map(values)
+          map(iterator)
         }
       )
 
       override lazy val write = new Write(
-        puts = sqlDefinitions.toList.flatMap(_.write.puts),
+        puts = sqlDefinitions.iterator.flatMap(_.write.puts).toList,
         toList = r => {
           val values = unmap(r)
-          sqlDefinitions.iterator.zip(values.productIterator)
+          sqlDefinitions.iterator.zip(values)
             .flatMap { case (r, v) =>
               try {
                 r.write.toList(v.asInstanceOf[r.Result])
@@ -93,14 +119,14 @@ object Composite {
         },
         unsafeSet = (ps, idx, r) => {
           val values = unmap(r)
-          sqlDefinitions.iterator.zip(sqlResultAccumulatedLengths).zip(values.productIterator)
+          sqlDefinitions.iterator.zip(sqlResultAccumulatedLengths).zip(values)
             .foreach { case ((r, toSkip), v) =>
               r.write.unsafeSet(ps, idx + toSkip, v.asInstanceOf[r.Result])
             }
         },
         unsafeUpdate = (rs, idx, r) => {
           val values = unmap(r)
-          sqlDefinitions.iterator.zip(sqlResultAccumulatedLengths).zip(values.productIterator)
+          sqlDefinitions.iterator.zip(sqlResultAccumulatedLengths).zip(values)
             .foreach { case ((r, toSkip), v) =>
               r.write.unsafeUpdate(rs, idx + toSkip, v.asInstanceOf[r.Result])
             }
@@ -110,10 +136,58 @@ object Composite {
       override def imap[B](mapper: R => B)(contramapper: B => R): SQLDefinition[B] =
         Composite(this)(mapper)(contramapper)
 
+      // TODO: test
+      override def option[R1](using @unused ng: NotGiven[R =:= Option[R1]]): SQLDefinition[Option[R]] =
+        unsafe(sqlDefinitions.map(_.option)) { iterator =>
+          enum State {
+            case Initial
+            case None
+            case Some(members: NonEmptyList[Any])
+            case ExpectedNoneButHadSomes(somes: NonEmptyList[(Any, Int)])
+            case ExpectedSomesButHadNone(noneIndexes: NonEmptyList[Int])
+          }
+
+          val state = iterator.map(_.asInstanceOf[Option[?]]).zipWithIndex.foldLeft(State.Initial) {
+            case (State.Initial, (None, _)) => State.None
+            case (State.Initial, (Some(value), _)) => State.Some(NonEmptyList.one(value))
+            case (State.None, (None, _)) => State.None
+            case (State.None, (Some(value), idx)) => State.ExpectedNoneButHadSomes(NonEmptyList.one((value, idx)))
+            case (State.Some(_), (None, idx)) => State.ExpectedSomesButHadNone(NonEmptyList.one(idx))
+            case (State.Some(members), (Some(value), _)) => State.Some(value :: members)
+            case (v: State.ExpectedNoneButHadSomes, (None, _)) => v
+            case (State.ExpectedNoneButHadSomes(somes), (Some(value), idx)) =>
+              State.ExpectedNoneButHadSomes((value, idx) :: somes)
+            case (State.ExpectedSomesButHadNone(noneIndexes), (None, idx)) =>
+              State.ExpectedSomesButHadNone(idx :: noneIndexes)
+            case (v: State.ExpectedSomesButHadNone, (Some(_), _)) => v
+          }
+
+          state match {
+            case State.Initial => throw new IllegalStateException(
+              "There should have been at least one element, but the iterator was empty."
+            )
+            case State.None => None
+            case State.Some(members) => Some(map(members.toList.reverseIterator))
+            case State.ExpectedNoneButHadSomes(somes) =>
+              val str = somes.toList.reverseIterator.map { case (value, idx) => s"  at $idx: $value" }.mkString("\n")
+              throw new IllegalStateException(
+                s"Expected all values to be `None`, but had some values that were `Some`:\n$str"
+              )
+            case State.ExpectedSomesButHadNone(noneIndexes) =>
+              val str = noneIndexes.toList.reverseIterator.map(_.toString).mkString(", ")
+              throw new IllegalStateException(
+                s"Expected all values to be `Some`, but had `None` values at indexes: $str"
+              )
+          }
+        } {
+          case None => sqlDefinitions.iterator.map(_ => None)
+          case Some(r) => unmap(r).map(Some(_))
+        }
+
       @targetName("bindColumns")
       override def ==>(value: R) = {
         val values = unmap(value)
-        val pairs = sqlDefinitions.iterator.zip(values.productIterator).flatMap { case (sqlDef, value) =>
+        val pairs = sqlDefinitions.iterator.zip(values).flatMap { case (sqlDef, value) =>
           (sqlDef ==> value.asInstanceOf[sqlDef.Result]).iterator
         }.toVector
         NonEmptyVector.fromVectorUnsafe(pairs)
@@ -122,19 +196,17 @@ object Composite {
       @targetName("equals")
       override def ===(value: R) = {
         val values = unmap(value)
-        val pairs = sqlDefinitions.iterator.zip(values.productIterator).map { case (sqlDef, value) =>
+        val pairs = sqlDefinitions.iterator.zip(values).map { case (sqlDef, value) =>
           (sqlDef === value.asInstanceOf[sqlDef.Result]).fragment
         }
         sql"(${pairs.mkFragments(sql" AND ")})"
       }
 
       override def prefixedWith(prefix: String): SQLDefinition[R] = {
-        val prefixedTuple = Tuple.fromArray(
-          sqlDefinitionsTuple.productIterator.map(_.asInstanceOf[SQLDefinition[?]].prefixedWith(prefix)).toArray
-        ).asInstanceOf[T]
-        apply(prefixedTuple)(map)(unmap)
+        unsafe(sqlDefinitions.map(_.prefixedWith(prefix)))(map)(unmap)
       }
     }
+  }
 
   /** Overload for a single element tuple. */
   def apply[A, R](sqlDefinition: SQLDefinition[A])(map: A => R)(unmap: R => A): SQLDefinition[R] =
@@ -149,6 +221,10 @@ object Composite {
 
       override def imap[B](mapper: R => B)(contramapper: B => R): SQLDefinition[B] =
         apply(sqlDefinition)(map.andThen(mapper))(contramapper.andThen(unmap))
+
+      // TODO: test
+      def option[R1](using @unused ng: NotGiven[R =:= Option[R1]]): SQLDefinition[Option[R]] =
+        sqlDefinition.option.imap(_.map(map))(_.map(unmap))
 
       @targetName("bindColumns")
       override def ==>(value: R) = sqlDefinition ==> unmap(value)

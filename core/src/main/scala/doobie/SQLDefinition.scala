@@ -7,7 +7,8 @@ import doobie.*
 import doobie.implicits.*
 import doobie.syntax.SqlInterpolator.SingleFragment
 
-import scala.annotation.targetName
+import scala.annotation.{targetName, unused}
+import scala.util.NotGiven
 
 
 /**
@@ -70,6 +71,14 @@ trait SQLDefinition[A] extends TypedMultiFragment[A] { self =>
 
   /** Vector of columns */
   def columns: NonEmptyVector[Column[?]]
+
+  /**
+   * Creates an [[Option]] version of the [[SQLDefinition]], giving that it is not already an [[Option]].
+   *
+   * Useful when you are doing joins and want a non-nullable [[Column]]/[[SQLDefinition]] to be represented as a
+   * nullable one.
+   * */
+  def option[B](using @unused ng: NotGiven[A =:= Option[B]]): Self[Option[A]]
 
   /**
    * The SQL [[Fragment]] containing all of the [[Column.name]] joined with ",".

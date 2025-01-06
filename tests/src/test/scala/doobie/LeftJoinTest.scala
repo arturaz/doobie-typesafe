@@ -41,4 +41,23 @@ class LeftJoinTest extends CatsEffectSuite with DBFixture with Helpers {
       ("Charlie", None, None)
     ))
   }
+  
+  withTable.test("left join with composite type") { xa =>
+    val persons = Person `as` "person"
+    val pets = Pets `as` "pet"
+    val columns = Columns((persons(_.nameCol), pets(_.Row.option)))
+    val select =
+      sql"SELECT $columns FROM $persons LEFT JOIN $pets ON ${persons.c(_.nameCol) === pets.c(_ => nameCol)}"
+        .queryOf(columns)
+
+    val io = (for {
+      rows <- select.to[List]
+    } yield rows).transact(xa)
+
+    assertIO(io, List(
+      ("Alice", Some(Pets("Fido", Some("Spot")))),
+      ("Bob", Some(Pets("Chuck", None))),
+      ("Charlie", None)
+    ))
+  }
 }
