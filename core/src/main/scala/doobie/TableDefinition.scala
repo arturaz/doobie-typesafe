@@ -1,7 +1,10 @@
 package doobie
 
+import cats.Reducible
+import cats.data.NonEmptyVector
 import doobie.implicits.*
 import doobie.syntax.SqlInterpolator.SingleFragment
+import doobie.util.pos.Pos
 
 
 /**
@@ -17,7 +20,7 @@ import doobie.syntax.SqlInterpolator.SingleFragment
  * @param rawName the name in database of the table.
  */
 class TableDefinition(val rawName: String) extends TableName {
-  val name = Fragment.const0(rawName)
+  val name: Fragment = Fragment.const0(rawName)
 
   override def toString = s"TableDefinition($rawName)"
 
@@ -150,6 +153,52 @@ case class AliasedTableDefinition[T <: TableDefinition](
 
 sealed trait TableName {
   def name: Fragment
+
+
+  /**
+   * Generates the SQL for `INSERT INTO table (column1, column2, ...) VALUES (value1, value2, ...)`.
+   *
+   * Example:
+   * {{{
+   *   tables.InventoryCharacters.insertInto(NonEmptyVector.of(
+   *     tables.InventoryCharacters.userId --> c.userId,
+   *     tables.InventoryCharacters.guid --> c.guid
+   *   ))
+   * }}}
+   */
+  def insertInto[F[_]](columns: F[(Fragment, Fragment)])(using Reducible[F], Pos): Fragment = {
+    val columnNames = columns.mapIntercalate(fr0"", fr0", ") { case (acc, (name, _)) =>
+      fr0"$acc$name"
+    }
+    val values = columns.mapIntercalate(fr0"", fr0", ") { case (acc, (_, value)) =>
+      fr0"$acc$value"
+    }
+    sql"INSERT INTO $name ($columnNames) VALUES ($values)"
+  }
+
+  /**
+   * Generates the SQL for `UPDATE table SET column1 = value1, column2 = value2, ...`.
+   *
+   * Example:
+   * {{{
+   *   tables.InventoryCharacters.updateTable(NonEmpty.createVector(
+   *     tables.InventoryCharacters.handgun1 --> loadouts.sets.set1.weapons.handgun,
+   *     tables.InventoryCharacters.handgun2 --> loadouts.sets.set2.weapons.handgun
+   *   ))
+   * }}}
+   */
+  def updateTable[F[_]](columns: F[(Fragment, Fragment)])(using Reducible[F], Pos): Fragment = {
+    val setClause = columns.mapIntercalate(fr0"", fr0", ") { case (acc, (name, value)) =>
+      fr0"$acc$name = $value"
+    }
+    sql"UPDATE $name SET $setClause"
+  }
+
+  /**
+   * Overload of [[updateTable]] for convenience.
+   */
+  def updateTable(column1: (Fragment, Fragment), other: (Fragment, Fragment)*)(using Pos): Fragment =
+    updateTable(NonEmptyVector.of(column1, other *))
 }
 object TableName {
   given Conversion[TableName, Fragment] = _.name
