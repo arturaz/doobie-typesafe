@@ -107,6 +107,9 @@ object Composite {
         }
       )
 
+      override def imap[B](mapper: R => B)(contramapper: B => R): SQLDefinition[B] =
+        Composite(this)(mapper)(contramapper)
+
       @targetName("bindColumns")
       override def ==>(value: R) = {
         val values = unmap(value)
@@ -137,9 +140,16 @@ object Composite {
   def apply[A, R](sqlDefinition: SQLDefinition[A])(map: A => R)(unmap: R => A): SQLDefinition[R] =
     new SQLDefinition[R] {
       override type Self[X] = SQLDefinition[X]
+
+      override def toString = sqlDefinition.toString()
+
       override def prefixedWith(prefix: String) = apply(sqlDefinition.prefixedWith(prefix))(map)(unmap)
       override val read = sqlDefinition.read.map(map)
       override val write = sqlDefinition.write.contramap(unmap)
+
+      override def imap[B](mapper: R => B)(contramapper: B => R): SQLDefinition[B] =
+        apply(sqlDefinition)(map.andThen(mapper))(contramapper.andThen(unmap))
+
       @targetName("bindColumns")
       override def ==>(value: R) = sqlDefinition ==> unmap(value)
       @targetName("equals")
@@ -151,6 +161,31 @@ object Composite {
    * [[SQLDefinition]] when the element is defined by two [[Option]]al values. 
    * 
    * Usually the database constraints will enforce that both are either [[Some]] or [[None]].
+   * 
+   * When using this we need to introduce a separate type so Scala compiler would know which [[Read]] and [[Write]]
+   * instances to use in SQL queries.
+   * 
+   * Example:
+   * {{{
+   *   /** If the document type supports a total amount, it will be stored here. If this is [[Some]] then
+   *     * [[colAmountCurrency]] will be [[Some]] as well, enforced by the database constraints.
+   *     */
+   *   val colAmount: Column[Option[BigDecimal]] = Column("amount")
+   *   
+   *   /** Same as [[colAmount]] but for the currency. */
+   *   val colAmountCurrency: Column[Option[AppCurrency]] = Column("amount_currency")
+   * 
+   *   /** The amount of the document if the document type supports a total amount. */
+   *   case class TotalAmount(m: Option[Money]) extends AnyVal
+   *   object TotalAmount
+   *       extends WithSQLDefinition[TotalAmount](
+   *         Composite
+   *           .fromMultiOption(colAmountCurrency.sqlDef, colAmount.sqlDef)(_.toSquants(_))(m =>
+   *             (AppCurrency.fromSquants(m.currency).getOrThrow, m.amount)
+   *           )
+   *           .imap(TotalAmount(_))(_.m)
+   *       )
+   * }}}
    * */
   def fromMultiOption[A1, A2, R](
     a1Def: SQLDefinition[Option[A1]],
@@ -170,6 +205,8 @@ object Composite {
    * [[SQLDefinition]] when the element is defined by three [[Option]]al values. 
    * 
    * Usually the database constraints will enforce that both are either [[Some]] or [[None]].
+   * 
+   * @see [[fromMultiOption]] overload for 2 [[Option]]al values for additional documentation.
    * */
   def fromMultiOption[A1, A2, A3, R](
     a1Def: SQLDefinition[Option[A1]],
@@ -190,6 +227,8 @@ object Composite {
    * [[SQLDefinition]] when the element is defined by four [[Option]]al values. 
    * 
    * Usually the database constraints will enforce that both are either [[Some]] or [[None]].
+   * 
+   * @see [[fromMultiOption]] overload for 2 [[Option]]al values for additional documentation.
    * */
   def fromMultiOption[A1, A2, A3, A4, R](
     a1Def: SQLDefinition[Option[A1]],
@@ -211,6 +250,8 @@ object Composite {
    * [[SQLDefinition]] when the element is defined by five [[Option]]al values. 
    * 
    * Usually the database constraints will enforce that both are either [[Some]] or [[None]].
+   * 
+   * @see [[fromMultiOption]] overload for 2 [[Option]]al values for additional documentation.
    * */
   def fromMultiOption[A1, A2, A3, A4, A5, R](
     a1Def: SQLDefinition[Option[A1]],
@@ -233,6 +274,8 @@ object Composite {
    * [[SQLDefinition]] when the element is defined by six [[Option]]al values. 
    * 
    * Usually the database constraints will enforce that both are either [[Some]] or [[None]].
+   * 
+   * @see [[fromMultiOption]] overload for 2 [[Option]]al values for additional documentation.
    * */
   def fromMultiOption[A1, A2, A3, A4, A5, A6, R](
     a1Def: SQLDefinition[Option[A1]],
@@ -256,6 +299,8 @@ object Composite {
    * [[SQLDefinition]] when the element is defined by seven [[Option]]al values. 
    * 
    * Usually the database constraints will enforce that both are either [[Some]] or [[None]].
+   * 
+   * @see [[fromMultiOption]] overload for 2 [[Option]]al values for additional documentation.
    * */
   def fromMultiOption[A1, A2, A3, A4, A5, A6, A7, R](
     a1Def: SQLDefinition[Option[A1]],

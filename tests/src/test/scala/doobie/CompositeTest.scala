@@ -135,4 +135,21 @@ class NestedCompositeTest extends CatsEffectSuite with DBFixture with Helpers {
     val actual = sql.transact(xa)
     actual.assertEquals((expected.person.name, expected.person.age, expected.pets.pet1, expected.pets.pet2))
   }
+
+  case class PersonWithPetsWrapper(personWithPets: PersonWithPets)
+  object PersonWithPetsWrapper extends WithSQLDefinition[PersonWithPetsWrapper](
+    personWithPets.imap(PersonWithPetsWrapper(_))(_.personWithPets)
+  )
+
+  withTable.test("select wrapped") { xa =>
+    val expected = PersonWithPetsWrapper(PersonWithPets(Person("Alice", Age(42)), Pets("Fido", None)))
+
+    val sql = for {
+      _ <- insertInto(personWithPetsTable, personWithPets ==> expected.personWithPets).update.run
+      result <- sql"select $PersonWithPetsWrapper from $personWithPetsTable".queryOf(PersonWithPetsWrapper).unique
+    } yield result
+
+    val actual = sql.transact(xa)
+    actual.assertEquals(expected)
+  }
 }

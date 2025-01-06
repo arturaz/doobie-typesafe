@@ -1,6 +1,6 @@
 package doobie
 
-import cats.Reducible
+import cats.{Invariant, Reducible}
 import cats.data.NonEmptyVector
 import doobie.implicits.*
 import doobie.syntax.SqlInterpolator.SingleFragment
@@ -56,6 +56,12 @@ case class Column[A](
 
   override def prefixedWith(prefix: String): Column[A] = Column[A](rawName = rawName, prefix = Some(prefix))
 
+  override def imap[B](mapper: A => B)(contramapper: B => A): Column[B] = 
+    Column[B](rawName = rawName, prefix = prefix)(using
+      read = read.map(mapper),
+      write = write.contramap(contramapper)
+    )
+
   override lazy val columns: NonEmptyVector[Column[?]] = NonEmptyVector.of(this)
 
   /** Returns a tuple of `(column_name, A)`. */
@@ -87,6 +93,10 @@ case class Column[A](
   @targetName("equalsColumn")
   def ===(a: Column[A]): TypedFragment[Boolean] = fr0"$name = $a"
 
+  /** Returns a `column_name = $a` [[Fragment]]. */
+  @targetName("equalsOptionalColumn")
+  def ===(a: Column[Option[A]]): TypedFragment[Boolean] = fr0"$name = $a"
+
   /** Returns a `column_name <> $a` [[Fragment]]. */
   @targetName("notEquals")
   def !==(a: A): TypedFragment[Boolean] = {
@@ -98,6 +108,10 @@ case class Column[A](
   /** Returns a `column_name <> $a` [[Fragment]]. */
   @targetName("notEqualsColumn")
   def !==(a: Column[A]): TypedFragment[Boolean] = fr0"$name <> $a"
+
+  /** Returns a `column_name <> $a` [[Fragment]]. */
+  @targetName("notEqualsOptionalColumn")
+  def !==(a: Column[Option[A]]): TypedFragment[Boolean] = fr0"$name <> $a"
 
   @targetName("lessThan")
   def <(a: A): TypedFragment[Boolean] = fr0"$name < $a"
@@ -156,9 +170,13 @@ case class Column[A](
   }
 }
 object Column {
-  given [A]: Conversion[Column[A], SQLDefinition[A]] = identity
-  given [A]: Conversion[Column[A], Fragment] = _.sql
-  given [A]: Conversion[Column[A], SingleFragment[A]] = c => SingleFragment(c.sql)
+  given toSqlDefinition[A]: Conversion[Column[A], SQLDefinition[A]] = identity
+  given toFragment[A]: Conversion[Column[A], Fragment] = _.sql
+  given toSingleFragment[A]: Conversion[Column[A], SingleFragment[A]] = c => SingleFragment(c.sql)
+
+  given invariant: Invariant[Column] with {
+    override def imap[A, B](fa: Column[A])(f: A => B)(g: B => A): Column[B] = fa.imap(f)(g)
+  }
 
   extension [A] (c: Column[Option[A]]) {
     def isNull: TypedFragment[Boolean] = fr0"${c.name} IS NULL"
@@ -166,5 +184,17 @@ object Column {
 
     //noinspection MutatorLikeMethodIsParameterless
     def setToNull: Fragment = fr0"${c.name} = NULL"
+
+    /** Returns a `column_name = $a` [[Fragment]].
+      * 
+      * @note SQL supports checking for equality between nullable and non-nullable columns. */
+    @targetName("equalsColumn")
+    def ===(a: Column[A]): TypedFragment[Boolean] = fr0"${c.name} = $a"
+
+    /** Returns a `column_name <> $a` [[Fragment]].
+      * 
+      * @note SQL supports checking for equality between nullable and non-nullable columns. */
+    @targetName("notEqualsColumn")
+    def !==(a: Column[A]): TypedFragment[Boolean] = fr0"${c.name} <> $a"
   }
 }

@@ -1,5 +1,6 @@
 package doobie
 
+import cats.Invariant
 import cats.data.NonEmptyVector
 import cats.syntax.all.*
 import doobie.*
@@ -55,6 +56,9 @@ trait SQLDefinition[A] extends TypedMultiFragment[A] { self =>
 
   def write: Write[A]
   given Write[A] = write
+
+  /** Changes the type of the definition. The change must be invariant and cannot fail. Useful for wrapper types. */
+  def imap[B](mapper: A => B)(contramapper: B => A): Self[B]
 
   /** Converts the value into a vector of `(columnName, value)` pairs. */
   @targetName("bindColumns")
@@ -112,10 +116,14 @@ trait SQLDefinition[A] extends TypedMultiFragment[A] { self =>
   }
 }
 object SQLDefinition {
-  given [A](using definition: SQLDefinition[A]): Read[A] = definition.read
-  given [A](using definition: SQLDefinition[A]): Write[A] = definition.write
-  given [A]: Conversion[SQLDefinition[A], Read[A]] = _.read
-  given [A]: Conversion[SQLDefinition[A], Write[A]] = _.write
-  given [A]: Conversion[SQLDefinition[A], Fragment] = _.sql
-  given [A]: Conversion[SQLDefinition[A], SingleFragment[Nothing]] = d => SingleFragment(d.sql)
+  given read[A](using definition: SQLDefinition[A]): Read[A] = definition.read
+  given write[A](using definition: SQLDefinition[A]): Write[A] = definition.write
+  given toRead[A]: Conversion[SQLDefinition[A], Read[A]] = _.read
+  given toWrite[A]: Conversion[SQLDefinition[A], Write[A]] = _.write
+  given toFragment[A]: Conversion[SQLDefinition[A], Fragment] = _.sql
+  given toSingleFragment[A]: Conversion[SQLDefinition[A], SingleFragment[Nothing]] = d => SingleFragment(d.sql)
+
+  given invariant: Invariant[SQLDefinition] with {
+    override def imap[A, B](fa: SQLDefinition[A])(f: A => B)(g: B => A): SQLDefinition[B] = fa.imap(f)(g)
+  }
 }

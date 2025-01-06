@@ -21,6 +21,8 @@ import scala.annotation.targetName
 trait WithSQLDefinition[A](val sqlDefinition: SQLDefinition[A]) extends SQLDefinition[A] {
   override def read: Read[A] = sqlDefinition.read
   override def write: Write[A] = sqlDefinition.write
+  override def imap[B](mapper: A => B)(contramapper: B => A): Self[B] = 
+    sqlDefinition.imap(mapper)(contramapper)
   @targetName("bindColumns")
   override def ==>(value: A): NonEmptyVector[(Fragment, Fragment)] = sqlDefinition ==> value
   @targetName("equals")
