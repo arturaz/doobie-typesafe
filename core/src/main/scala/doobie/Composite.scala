@@ -51,14 +51,22 @@ object Composite {
    * */
   def apply[T <: Tuple : IsMappedBy[SQLDefinition], R](
     sqlDefinitionsTuple: T
-  )(map: TupleValues[T] => R)(unmap: R => TupleValues[T]): SQLDefinition[R] =
-    unsafe(
-      NonEmptyVector.fromVectorUnsafe(
-        sqlDefinitionsTuple.productIterator.map(_.asInstanceOf[SQLDefinition[?]]).toVector
-      )
-    )(iterator =>
-      map(Tuple.fromArray(iterator.toArray).asInstanceOf[TupleValues[T]])
-    )(r => unmap(r).productIterator)
+  )(map: TupleValues[T] => R)(unmap: R => TupleValues[T]): SQLDefinition[R] = {
+    val sqlDefs = NonEmptyVector.fromVectorUnsafe(
+      sqlDefinitionsTuple.productIterator.map(_.asInstanceOf[SQLDefinition[?]]).toVector
+    )
+
+    unsafe(sqlDefs, isOption = false) { iterator =>
+      val untypedTuple = Tuple.fromArray(iterator.toArray)
+//      println(
+//        s"""---
+//           |sqlDefs: $sqlDefs
+//           |untypedTuple: $untypedTuple
+//           |""".stripMargin)
+      val tuple = untypedTuple.asInstanceOf[TupleValues[T]]
+      map(tuple)
+    }(r => unmap(r).productIterator)
+  }
 
   /**
    * Type-unsafe version of [[apply]].
@@ -67,42 +75,27 @@ object Composite {
    * @param unmap Function to map the final result to the components that make up the composite type.
    **/
   def unsafe[R](
-    sqlDefinitions: NonEmptyVector[SQLDefinition[?]]
+    sqlDefinitions: NonEmptyVector[SQLDefinition[?]],
+    isOption: Boolean
   )(map: Iterator[Any] => R)(unmap: R => Iterator[Any]): SQLDefinition[R] = {
-    val _sqlDefinitions = sqlDefinitions
+    val isOpt = isOption
 
     new SQLDefinition[R] { self =>
       override type Self[X] = SQLDefinition[X]
 
       override def toString = s"Composite(columns: ${columns.iterator.map(_.rawName).mkString(", ")})"
 
-      lazy val sqlDefinitions: NonEmptyVector[SQLDefinition[?]] = _sqlDefinitions
-
       /** Amount of results to skip from the [[ResultSet]] when reading the Nth tuple element. */
       lazy val sqlResultAccumulatedLengths: Vector[Int] =
-        sqlDefinitions.toVector.scanLeft(0)(_ + _.read.length).init
+        TypedMultiFragment.sqlResultAccumulatedLengths(sqlDefinitions.toVector)
 
       override lazy val columns: NonEmptyVector[Column[?]] =
         sqlDefinitions.flatMap(_.columns)
 
-      override lazy val read = new Read(
-        gets = sqlDefinitions.iterator.flatMap(_.read.gets).toList,
-        unsafeGet = (rs, idx) => {
-          val iterator = sqlDefinitions.iterator.zip(sqlResultAccumulatedLengths).map { case (r, toSkip) =>
-            val position = idx + toSkip
-            try {
-              r.read.unsafeGet(rs, position)
-            }
-            catch { case NonFatal(e) =>
-              throw new Exception(s"Error while reading $r at position $position from a ResultSet", e)
-            }
-          }
+      override lazy val read =
+        TypedMultiFragment.read(sqlDefinitions.toVector, sqlResultAccumulatedLengths)(map)
 
-          map(iterator)
-        }
-      )
-
-      override lazy val write = new Write(
+      override lazy val write = Write(
         puts = sqlDefinitions.iterator.flatMap(_.write.puts).toList,
         toList = r => {
           val values = unmap(r)
@@ -136,38 +129,105 @@ object Composite {
       override def imap[B](mapper: R => B)(contramapper: B => R): SQLDefinition[B] =
         Composite(this)(mapper)(contramapper)
 
-      // TODO: test
-      override def option[R1](using @unused ng: NotGiven[R =:= Option[R1]]): SQLDefinition[Option[R]] =
-        unsafe(sqlDefinitions.map(_.option)) { iterator =>
+      override def isOption: Boolean = isOpt
+
+      override def option[R1](using @unused ng: NotGiven[R =:= Option[R1]]): SQLDefinition[Option[R]] = {
+        unsafe(sqlDefinitions.map(_.option), isOption = true) { iterator =>
+          enum Value {
+            case Raw(v: Any)
+
+            /**
+             * Represents the case when we do not have a value, but it is OK, because that [[SQLDefinition]] is
+             * nullable.
+             **/
+            case OptionNone
+          }
+
           enum State {
             case Initial
             case None
-            case Some(members: NonEmptyList[Any])
+            case Some(members: NonEmptyList[Value])
+            /**
+             * Special case when we encounter first value that is `None` and it happens to be a
+             * [[SQLDefinition.isOption]].
+             *
+             * In that case we do not know whether all subsequent values are `Some` or `None` and have to wait for
+             * more values to decide.
+             *
+             * For example, for `Pets(None, "foo")` we would read `(None, Some("foo")`, which translates to
+             * `Some(Pets(None, "foo"))`, or `(None, None)`, which translates to `None`.
+             * */
+            case Undecided(noneMembersEncounteredSoFar: Int)
             case ExpectedNoneButHadSomes(somes: NonEmptyList[(Any, Int)])
             case ExpectedSomesButHadNone(noneIndexes: NonEmptyList[Int])
           }
 
-          val state = iterator.map(_.asInstanceOf[Option[?]]).zipWithIndex.foldLeft(State.Initial) {
-            case (State.Initial, (None, _)) => State.None
-            case (State.Initial, (Some(value), _)) => State.Some(NonEmptyList.one(value))
-            case (State.None, (None, _)) => State.None
-            case (State.None, (Some(value), idx)) => State.ExpectedNoneButHadSomes(NonEmptyList.one((value, idx)))
-            case (State.Some(_), (None, idx)) => State.ExpectedSomesButHadNone(NonEmptyList.one(idx))
-            case (State.Some(members), (Some(value), _)) => State.Some(value :: members)
-            case (v: State.ExpectedNoneButHadSomes, (None, _)) => v
-            case (State.ExpectedNoneButHadSomes(somes), (Some(value), idx)) =>
-              State.ExpectedNoneButHadSomes((value, idx) :: somes)
-            case (State.ExpectedSomesButHadNone(noneIndexes), (None, idx)) =>
-              State.ExpectedSomesButHadNone(idx :: noneIndexes)
-            case (v: State.ExpectedSomesButHadNone, (Some(_), _)) => v
-          }
+          val values = iterator.toVector
+
+//          println(
+//            s"""---
+//               |sqlDefs: $sqlDefinitions
+//               |values: $values
+//               |""".stripMargin)
+
+          val state = values.iterator.map(_.asInstanceOf[Option[?]]).zipWithIndex
+            .foldLeft(State.Initial) { case (s, (a, idx)) =>
+//              println(s"Iteration: state=$s, idx=$idx, value=$a")
+              (s, a) match {
+                case (State.Initial, None) =>
+                  if (sqlDefinitions.getUnsafe(idx).isOption) State.Undecided(1)
+                  else State.None
+                case (State.Initial, Some(value)) => State.Some(NonEmptyList.one(Value.Raw(value)))
+
+                case (State.Undecided(members), None) =>
+                  if (sqlDefinitions.getUnsafe(idx).isOption) State.Undecided(members + 1)
+                  else
+                    /** The [[SQLDefinition]] is not nullable, thus [[None]] here indicates an error. */
+                    State.ExpectedSomesButHadNone(NonEmptyList.one(idx))
+                case (State.Undecided(members), Some(value)) =>
+                  // If we have a `Some` value that means the record must be present, even with some nullable fields.
+                  State.Some(Value.Raw(value) :: NonEmptyList.fromListUnsafe(List.fill(members)(Value.OptionNone)))
+
+                case (State.None, None) => State.None
+                case (State.None, Some(value)) => State.ExpectedNoneButHadSomes(NonEmptyList.one((value, idx)))
+
+                case (State.Some(members), None) =>
+                  if (sqlDefinitions.getUnsafe(idx).isOption)
+                    // It is OK for this to be None, because it is an option
+                    State.Some(Value.OptionNone :: members)
+                  else State.ExpectedSomesButHadNone(NonEmptyList.one(idx))
+                case (State.Some(members), Some(value)) => State.Some(Value.Raw(value) :: members)
+
+                case (v: State.ExpectedNoneButHadSomes, None) => v
+                case (State.ExpectedNoneButHadSomes(somes), Some(value)) =>
+                  State.ExpectedNoneButHadSomes((value, idx) :: somes)
+
+                case (State.ExpectedSomesButHadNone(noneIndexes), None) =>
+                  State.ExpectedSomesButHadNone(idx :: noneIndexes)
+                case (v: State.ExpectedSomesButHadNone, Some(_)) => v
+              }
+            }
+
+//          println(s"State: $state")
 
           state match {
             case State.Initial => throw new IllegalStateException(
               "There should have been at least one element, but the iterator was empty."
             )
-            case State.None => None
-            case State.Some(members) => Some(map(members.toList.reverseIterator))
+            case State.Undecided(_) | State.None =>
+              // If all members are `None`, then the record is not present.
+              None
+            case State.Some(members) =>
+              val membersInCorrectOrder = members.toList.reverseIterator.zipWithIndex.map { case (a, idx) =>
+                val sqlDef = sqlDefinitions.getUnsafe(idx)
+
+                a match {
+                  case Value.Raw(a) => if (sqlDef.isOption) Some(a) else a
+                  case Value.OptionNone => None
+                }
+              }
+              val result = map(membersInCorrectOrder)
+              Some(result)
             case State.ExpectedNoneButHadSomes(somes) =>
               val str = somes.toList.reverseIterator.map { case (value, idx) => s"  at $idx: $value" }.mkString("\n")
               throw new IllegalStateException(
@@ -183,6 +243,7 @@ object Composite {
           case None => sqlDefinitions.iterator.map(_ => None)
           case Some(r) => unmap(r).map(Some(_))
         }
+      }
 
       @targetName("bindColumns")
       override def ==>(value: R) = {
@@ -203,7 +264,7 @@ object Composite {
       }
 
       override def prefixedWith(prefix: String): SQLDefinition[R] = {
-        unsafe(sqlDefinitions.map(_.prefixedWith(prefix)))(map)(unmap)
+        unsafe(sqlDefinitions.map(_.prefixedWith(prefix)), isOption)(map)(unmap)
       }
     }
   }
@@ -222,7 +283,8 @@ object Composite {
       override def imap[B](mapper: R => B)(contramapper: B => R): SQLDefinition[B] =
         apply(sqlDefinition)(map.andThen(mapper))(contramapper.andThen(unmap))
 
-      // TODO: test
+      override def isOption: Boolean = sqlDefinition.isOption
+
       def option[R1](using @unused ng: NotGiven[R =:= Option[R1]]): SQLDefinition[Option[R]] =
         sqlDefinition.option.imap(_.map(map))(_.map(unmap))
 

@@ -42,12 +42,15 @@ class LeftJoinTest extends CatsEffectSuite with DBFixture with Helpers {
     ))
   }
   
-  withTable.test("left join with composite type") { xa =>
+  withTable.test("composite: joined value is Some with Some inside") { xa =>
     val persons = Person `as` "person"
     val pets = Pets `as` "pet"
     val columns = Columns((persons(_.nameCol), pets(_.Row.option)))
+
     val select =
-      sql"SELECT $columns FROM $persons LEFT JOIN $pets ON ${persons.c(_.nameCol) === pets.c(_ => nameCol)}"
+      sql"""SELECT $columns FROM $persons LEFT JOIN $pets ON ${persons.c(_.nameCol) === pets.c(_ => nameCol)}
+            WHERE ${persons.c(_.nameCol) === "Alice"}
+         """
         .queryOf(columns)
 
     val io = (for {
@@ -55,8 +58,66 @@ class LeftJoinTest extends CatsEffectSuite with DBFixture with Helpers {
     } yield rows).transact(xa)
 
     assertIO(io, List(
-      ("Alice", Some(Pets("Fido", Some("Spot")))),
-      ("Bob", Some(Pets("Chuck", None))),
+      ("Alice", Some(Pets.Row("Fido", Some("Spot")))),
+    ))
+  }
+
+  withTable.test("composite: joined value is Some with None inside as the 2nd column") { xa =>
+    val persons = Person `as` "person"
+    val pets = Pets `as` "pet"
+    val columns = Columns((persons(_.nameCol), pets(_.Row.option)))
+
+    val select =
+      sql"""SELECT $columns FROM $persons LEFT JOIN $pets ON ${persons.c(_.nameCol) === pets.c(_ => nameCol)}
+            WHERE ${persons.c(_.nameCol) === "Bob"}
+         """
+        .queryOf(columns)
+
+    val io = (for {
+      rows <- select.to[List]
+    } yield rows).transact(xa)
+
+    assertIO(io, List(
+      ("Bob", Some(Pets.Row("Chuck", None))),
+    ))
+  }
+
+  withTable.test("composite: joined value is Some with None inside as the 1st column") { xa =>
+    val persons = Person `as` "person"
+    val pets = Pets `as` "pet"
+    val columns = Columns((persons(_.nameCol), pets(_.InvertedRow.option)))
+
+    val select =
+      sql"""SELECT $columns FROM $persons LEFT JOIN $pets ON ${persons.c(_.nameCol) === pets.c(_ => nameCol)}
+            WHERE ${persons.c(_.nameCol) === "Bob"}
+         """
+        .queryOf(columns)
+
+    val io = (for {
+      rows <- select.to[List]
+    } yield rows).transact(xa)
+
+    assertIO(io, List(
+      ("Bob", Some(Pets.InvertedRow(None, "Chuck"))),
+    ))
+  }
+
+  withTable.test("composite: joined value is None") { xa =>
+    val persons = Person `as` "person"
+    val pets = Pets `as` "pet"
+    val columns = Columns((persons(_.nameCol), pets(_.Row.option)))
+
+    val select =
+      sql"""SELECT $columns FROM $persons LEFT JOIN $pets ON ${persons.c(_.nameCol) === pets.c(_ => nameCol)}
+            WHERE ${persons.c(_.nameCol) === "Charlie"}
+         """
+        .queryOf(columns)
+
+    val io = (for {
+      rows <- select.to[List]
+    } yield rows).transact(xa)
+
+    assertIO(io, List(
       ("Charlie", None)
     ))
   }

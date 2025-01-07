@@ -2,6 +2,8 @@ package doobie
 
 import cats.{Invariant, Reducible}
 import cats.data.NonEmptyVector
+import cats.syntax.show.*
+import doobie.enumerated.Nullability
 import doobie.implicits.*
 import doobie.syntax.SqlInterpolator.SingleFragment
 
@@ -24,8 +26,8 @@ import scala.util.NotGiven
  * @param prefix the prefix of the table that this column belongs to, if specified. This is [[Some]] after you use
  *               [[prefixedWith]].
  * */
-case class Column[A](
-  rawName: String, prefix: Option[String] = None
+case class Column[A] private (
+  rawName: String, prefix: Option[String], isOption: Boolean
 )(
   using val read: Read[A], val write: Write[A]
 ) extends SQLDefinition[A] with TypedFragment[A] { self =>
@@ -34,6 +36,16 @@ case class Column[A](
   override def fragment: Fragment = name
 
   override type Self[X] = Column[X]
+
+  override def toString: String = {
+    val s = prefix match
+      case Some(prefix) => show"$prefix.$rawName"
+      case None => rawName
+
+    val isOpt = if (isOption) "?" else ""
+
+    show"Column($s$isOpt)"
+  }
 
   /** Returns the [[Get]] that is backing the [[read]]. */
   lazy val get: Get[A] = {
@@ -49,15 +61,16 @@ case class Column[A](
 
   /** Creates an [[Option]] version of the [[Column]], giving that it is not already an [[Option]]. */
   override def option[B](using @unused ng: NotGiven[A =:= Option[B]]): Column[Option[A]] =
-    Column[Option[A]](rawName, prefix)(using
+    Column[Option[A]](rawName, prefix, isOption = true)(using
       read = Read.fromGetOption(self.get),
       write = Write.fromPutOption(self.put)
     )
 
-  override def prefixedWith(prefix: String): Column[A] = Column[A](rawName = rawName, prefix = Some(prefix))
+  override def prefixedWith(prefix: String): Column[A] =
+    copy(prefix = Some(prefix))
 
   override def imap[B](mapper: A => B)(contramapper: B => A): Column[B] = 
-    Column[B](rawName = rawName, prefix = prefix)(using
+    Column[B](rawName = rawName, prefix = prefix, isOption = isOption)(using
       read = read.map(mapper),
       write = write.contramap(contramapper)
     )
@@ -170,6 +183,9 @@ case class Column[A](
   }
 }
 object Column {
+  def apply[A](rawName: String)(using r: Read[A], w: Write[A]) =
+    new Column[A](rawName, prefix = None, isOption = r.gets.forall(_._2 == Nullability.Nullable))
+
   given toSqlDefinition[A]: Conversion[Column[A], SQLDefinition[A]] = identity
   given toFragment[A]: Conversion[Column[A], Fragment] = _.sql
   given toSingleFragment[A]: Conversion[Column[A], SingleFragment[A]] = c => SingleFragment(c.sql)

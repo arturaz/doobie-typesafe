@@ -71,6 +71,9 @@ trait SQLDefinition[A] extends TypedMultiFragment[A] { self =>
 
   /** Vector of columns */
   def columns: NonEmptyVector[Column[?]]
+  
+  /** Was this [[SQLDefinition]] created from a [[option]] method. */
+  def isOption: Boolean
 
   /**
    * Creates an [[Option]] version of the [[SQLDefinition]], giving that it is not already an [[Option]].

@@ -24,6 +24,7 @@ trait WithSQLDefinition[A](val sqlDefinition: SQLDefinition[A]) extends SQLDefin
   override def write: Write[A] = sqlDefinition.write
   override def imap[B](mapper: A => B)(contramapper: B => A): Self[B] = 
     sqlDefinition.imap(mapper)(contramapper)
+  override def isOption: Boolean = sqlDefinition.isOption
   override def option[B](using ng: NotGiven[A =:= Option[B]]): Self[Option[A]] =
     sqlDefinition.option
   @targetName("bindColumns")

@@ -76,9 +76,9 @@ class CompositeTest extends CatsEffectSuite with DBFixture with Helpers {
 }
 
 class NestedCompositeTest extends CatsEffectSuite with DBFixture with Helpers {
-  case class PersonWithPets(person: Person, pets: Pets)
+  case class PersonWithPets(person: Person, pets: Pets.Row)
   val personWithPets: SQLDefinition[PersonWithPets] =
-    Composite((person, Pets.Row))(PersonWithPets.apply)(Tuple.fromProductTyped)
+    Composite((person, Pets.Row.sqlDef))(PersonWithPets.apply)(Tuple.fromProductTyped)
   val personWithPetsTable = new TableDefinition("person_with_pets") {}
 
   test("sql") {
@@ -86,13 +86,13 @@ class NestedCompositeTest extends CatsEffectSuite with DBFixture with Helpers {
   }
 
   test("==> #1") {
-    val actual = personWithPets ==> PersonWithPets(Person("Alice", Age(42)), Pets("Fido", Some("Spot")))
+    val actual = personWithPets ==> PersonWithPets(Person("Alice", Age(42)), Pets.Row("Fido", Some("Spot")))
     val expected = NonEmptyVector.of(nameCol --> "Alice", ageCol --> Age(42), pet1Col --> "Fido", pet2Col --> Some("Spot"))
     assertEquals(actual.map(_.toString()), expected.map(_.toString()))
   }
 
   test("==> #2") {
-    val actual = personWithPets ==> PersonWithPets(Person("Alice", Age(42)), Pets("Fido", None))
+    val actual = personWithPets ==> PersonWithPets(Person("Alice", Age(42)), Pets.Row("Fido", None))
     val expected = NonEmptyVector.of(nameCol --> "Alice", ageCol --> Age(42), pet1Col --> "Fido", pet2Col --> None)
     assertEquals(actual.map(_.toString()), expected.map(_.toString()))
   }
@@ -114,7 +114,7 @@ class NestedCompositeTest extends CatsEffectSuite with DBFixture with Helpers {
   }
 
   withTable.test("select") { xa =>
-    val expected = PersonWithPets(Person("Alice", Age(42)), Pets("Fido", None))
+    val expected = PersonWithPets(Person("Alice", Age(42)), Pets.Row("Fido", None))
     val sql = for {
       _ <- insertInto(personWithPetsTable, personWithPets ==> expected).update.run
       result <- sql"select $personWithPets from $personWithPetsTable".queryOf(personWithPets).unique
@@ -125,7 +125,7 @@ class NestedCompositeTest extends CatsEffectSuite with DBFixture with Helpers {
   }
 
   withTable.test("select columns") { xa =>
-    val expected = PersonWithPets(Person("Alice", Age(42)), Pets("Fido", None))
+    val expected = PersonWithPets(Person("Alice", Age(42)), Pets.Row("Fido", None))
     val sql = for {
       _ <- insertInto(personWithPetsTable, personWithPets ==> expected).update.run
       columns = Columns((nameCol.sqlDef, ageCol.sqlDef, pet1Col.sqlDef, pet2Col.sqlDef))
@@ -142,7 +142,7 @@ class NestedCompositeTest extends CatsEffectSuite with DBFixture with Helpers {
   )
 
   withTable.test("select wrapped") { xa =>
-    val expected = PersonWithPetsWrapper(PersonWithPets(Person("Alice", Age(42)), Pets("Fido", None)))
+    val expected = PersonWithPetsWrapper(PersonWithPets(Person("Alice", Age(42)), Pets.Row("Fido", None)))
 
     val sql = for {
       _ <- insertInto(personWithPetsTable, personWithPets ==> expected.personWithPets).update.run

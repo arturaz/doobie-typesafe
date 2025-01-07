@@ -34,6 +34,6 @@ implicit class FragmentExtensions(private val fragment: Fragment) extends AnyVal
    *   sql"SELECT $columns FROM $t".queryOf(columns)
    * }}}
    */
-  def queryOf[A](@unused c: Columns[A])(implicit read: Read[A]): Query0[A] =
-    fragment.query[A]
+  def queryOf[A](@unused c: Columns[A]): Query0[A] =
+    fragment.query[A](using c.read)
 }

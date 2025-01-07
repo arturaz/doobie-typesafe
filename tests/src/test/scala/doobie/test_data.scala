@@ -14,12 +14,19 @@ def nameCol = Person.nameCol
 def ageCol = Person.ageCol
 lazy val person: SQLDefinition[Person] = Composite((nameCol.sqlDef, ageCol.sqlDef))(Person.apply)(Tuple.fromProductTyped)
 
-case class Pets(pet1: String, pet2: Option[String])
 object Pets extends TableDefinition("pets") {
   val pet1Col = Column[String]("pet1")
   val pet2Col = Column[Option[String]]("pet2")
 
-  lazy val Row: SQLDefinition[Pets] = Composite((pet1Col.sqlDef, pet2Col.sqlDef))(Pets.apply)(Tuple.fromProductTyped)
+  case class Row(pet1: String, pet2: Option[String])
+  object Row extends WithSQLDefinition[Row](
+    Composite((pet1Col.sqlDef, pet2Col.sqlDef))(Row.apply)(Tuple.fromProductTyped)
+  )
+
+  case class InvertedRow(pet2: Option[String], pet1: String)
+  object InvertedRow extends WithSQLDefinition[InvertedRow](
+    Composite((pet2Col.sqlDef, pet1Col.sqlDef))(InvertedRow.apply)(Tuple.fromProductTyped)
+  )
 }
 def pet1Col = Pets.pet1Col
 def pet2Col = Pets.pet2Col
