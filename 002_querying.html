@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+  
+  <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="generator" content="Typelevel Laika + Helium Theme" />
+  <title>Querying</title>
+  
+  <meta name="author" content="doobie-typesafe contributors"/>
+  
+  <meta name="author" content="Artūras Šlajus"/>
+  
+  
+  <meta name="description" content="docs"/>
+  
+  
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700">
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Fira+Mono:500">
+  
+  <link rel="stylesheet" type="text/css" href="helium/site/icofont.min.css" />
+    <link rel="stylesheet" type="text/css" href="helium/site/laika-helium.css" />
+  <script src="helium/site/laika-helium.js"></script>
+  
+  
+  <script> /* for avoiding page load transitions */ </script>
+</head>
+
+  <body>
+
+    <header id="top-bar" class="light-default dark-default">
+
+  <div class="row">
+    <a id="nav-icon">
+      <i class="icofont-laika navigationMenu" title="Navigation">&#xefa2;</i>
+    </a>
+    
+    
+  </div>
+
+  <a class="icon-link glyph-link" href="index.html"><i class="icofont-laika home" title="Home">&#xef47;</i></a>
+
+  <div class="row links">
+    
+    <a class="icon-link svg-link" href="https://github.com/arturaz/doobie-typesafe"><span class="github" title="Source Code"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M49.995,1c-27.609,-0 -49.995,22.386 -49.995,50.002c-0,22.09 14.325,40.83 34.194,47.444c2.501,0.458 3.413,-1.086 3.413,-2.412c0,-1.185 -0.043,-4.331 -0.067,-8.503c-13.908,3.021 -16.843,-6.704 -16.843,-6.704c-2.274,-5.773 -5.552,-7.311 -5.552,-7.311c-4.54,-3.103 0.344,-3.042 0.344,-3.042c5.018,0.356 7.658,5.154 7.658,5.154c4.46,7.64 11.704,5.433 14.552,4.156c0.454,-3.232 1.744,-5.436 3.174,-6.685c-11.102,-1.262 -22.775,-5.553 -22.775,-24.713c-0,-5.457 1.949,-9.92 5.147,-13.416c-0.516,-1.265 -2.231,-6.348 0.488,-13.233c0,0 4.199,-1.344 13.751,5.126c3.988,-1.108 8.266,-1.663 12.518,-1.682c4.245,0.019 8.523,0.574 12.517,1.682c9.546,-6.47 13.736,-5.126 13.736,-5.126c2.728,6.885 1.013,11.968 0.497,13.233c3.204,3.496 5.141,7.959 5.141,13.416c0,19.209 -11.691,23.436 -22.83,24.673c1.795,1.544 3.394,4.595 3.394,9.26c0,6.682 -0.061,12.076 -0.061,13.715c0,1.338 0.899,2.894 3.438,2.406c19.853,-6.627 34.166,-25.354 34.166,-47.438c-0,-27.616 -22.389,-50.002 -50.005,-50.002"/>
+  </g>
+</svg></span></a>
+    
+  </div>  
+
+</header>
+    
+    <nav id="sidebar">
+
+  <div class="row">
+    
+    <a class="icon-link svg-link" href="https://github.com/arturaz/doobie-typesafe"><span class="github" title="Source Code"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M49.995,1c-27.609,-0 -49.995,22.386 -49.995,50.002c-0,22.09 14.325,40.83 34.194,47.444c2.501,0.458 3.413,-1.086 3.413,-2.412c0,-1.185 -0.043,-4.331 -0.067,-8.503c-13.908,3.021 -16.843,-6.704 -16.843,-6.704c-2.274,-5.773 -5.552,-7.311 -5.552,-7.311c-4.54,-3.103 0.344,-3.042 0.344,-3.042c5.018,0.356 7.658,5.154 7.658,5.154c4.46,7.64 11.704,5.433 14.552,4.156c0.454,-3.232 1.744,-5.436 3.174,-6.685c-11.102,-1.262 -22.775,-5.553 -22.775,-24.713c-0,-5.457 1.949,-9.92 5.147,-13.416c-0.516,-1.265 -2.231,-6.348 0.488,-13.233c0,0 4.199,-1.344 13.751,5.126c3.988,-1.108 8.266,-1.663 12.518,-1.682c4.245,0.019 8.523,0.574 12.517,1.682c9.546,-6.47 13.736,-5.126 13.736,-5.126c2.728,6.885 1.013,11.968 0.497,13.233c3.204,3.496 5.141,7.959 5.141,13.416c0,19.209 -11.691,23.436 -22.83,24.673c1.795,1.544 3.394,4.595 3.394,9.26c0,6.682 -0.061,12.076 -0.061,13.715c0,1.338 0.899,2.894 3.438,2.406c19.853,-6.627 34.166,-25.354 34.166,-47.438c-0,-27.616 -22.389,-50.002 -50.005,-50.002"/>
+  </g>
+</svg></span></a>
+    
+  </div>
+
+  <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="000_installation.html">Installation</a></li>
+    <li class="level1 nav-leaf"><a href="001_table_definitions.html">Table Definitions</a></li>
+    <li class="level1 active nav-leaf"><a href="#">Querying</a></li>
+    <li class="level1 nav-leaf"><a href="003_inserting.html">Inserting</a></li>
+    <li class="level1 nav-leaf"><a href="004_updating.html">Updating</a></li>
+    <li class="level1 nav-leaf"><a href="005_final_notes.html">Final Notes</a></li>
+  </ul>
+
+</nav>
+
+    <div id="container">
+
+      
+<nav id="page-nav">
+  <p class="header"><a href="#">Querying</a></p>
+
+  <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="#equality">Equality</a></li>
+    <li class="level1 nav-leaf"><a href="#set-membership">Set Membership</a></li>
+    <li class="level1 nav-leaf"><a href="#nullability">Nullability</a></li>
+    <li class="level1 nav-node"><a href="#performing-table-joins">Performing Table Joins</a></li>
+    <li class="level2 nav-leaf"><a href="#left-right-joins">Left/Right Joins</a></li>
+    <li class="level1 nav-leaf"><a href="#related-projects">Related projects</a></li>
+  </ul>
+
+  <p class="footer"></p>
+</nav>
+
+
+      <main class="content">
+
+        <h1 id="querying" class="title">Querying</h1>
+        <p>Main benefits of this library are:</p>
+        <ul>
+          <li>You can not mix up the order of the columns in the query and their types.</li>
+          <li>Certain operations, like equality, set membership, comparisons can be done in type-safe way.</li>
+        </ul>
+        <p>All the following examples have this code in common:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">doobie</span><span>.*
+</span><span class="keyword">import</span><span> </span><span class="identifier">doobie</span><span>.</span><span class="identifier">implicits</span><span>.*
+
+</span><span class="keyword">import</span><span> </span><span class="type-name">Users</span><span> </span><span class="keyword">as</span><span> </span><span class="identifier">t</span><span>
+</span><span class="keyword">val</span><span> </span><span class="identifier">columns</span><span> = </span><span class="type-name">Columns</span><span>((</span><span class="identifier">t</span><span>.</span><span class="identifier">firstName</span><span>, </span><span class="identifier">t</span><span>.</span><span class="identifier">lastName</span><span>))
+</span><span class="comment">// columns: Columns[Tuple2[String, String]] = Columns(
+//   sql = Fragment(&quot;first_name, last_name&quot;),
+//   read = doobie.util.Read$$anon$5@4cf040f3
+// )</span></code></pre>
+        
+        <h2 id="equality" class="section"><a class="anchor-link left" href="#equality"><i class="icofont-laika link">&#xef71;</i></a>Equality</h2>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">querySql</span><span> = </span><span class="string-literal">sql&quot;SELECT </span><span class="substitution">$columns</span><span class="string-literal"> FROM </span><span class="substitution">$t</span><span class="string-literal"> WHERE </span><span class="substitution">${t.id === 42}</span><span class="string-literal">&quot;</span><span>
+</span><span class="comment">// querySql: Fragment = Fragment(&quot;SELECT first_name, last_name FROM users WHERE id = ?&quot;)
+</span><span class="keyword">val</span><span> </span><span class="identifier">query</span><span> = </span><span class="identifier">querySql</span><span>.</span><span class="identifier">queryOf</span><span>(</span><span class="identifier">columns</span><span>)
+</span><span class="comment">// query: Query0[Tuple2[String, String]] = doobie.util.query$Query$$anon$3@62e69ccb
+</span><span>
+</span><span class="keyword">val</span><span> </span><span class="identifier">notEqualQuerySql</span><span> = </span><span class="string-literal">sql&quot;SELECT </span><span class="substitution">$columns</span><span class="string-literal"> FROM </span><span class="substitution">$t</span><span class="string-literal"> WHERE </span><span class="substitution">${t.id !== 42}</span><span class="string-literal">&quot;</span><span>
+</span><span class="comment">// notEqualQuerySql: Fragment = Fragment(&quot;SELECT first_name, last_name FROM users WHERE id &lt;&gt; ?&quot;)
+</span><span class="keyword">val</span><span> </span><span class="identifier">notEqualQuery</span><span> = </span><span class="identifier">querySql</span><span>.</span><span class="identifier">queryOf</span><span>(</span><span class="identifier">columns</span><span>)
+</span><span class="comment">// notEqualQuery: Query0[Tuple2[String, String]] = doobie.util.query$Query$$anon$3@2fb4d4f4</span></code></pre>
+        
+        <h2 id="set-membership" class="section"><a class="anchor-link left" href="#set-membership"><i class="icofont-laika link">&#xef71;</i></a>Set Membership</h2>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">multiQuerySql</span><span> = </span><span class="string-literal">sql&quot;SELECT </span><span class="substitution">$columns</span><span class="string-literal"> FROM </span><span class="substitution">$t</span><span class="string-literal"> WHERE </span><span class="substitution">${t.id in Vector(1, 2, 3)}</span><span class="string-literal">&quot;</span><span>
+</span><span class="comment">// multiQuerySql: Fragment = Fragment(&quot;SELECT first_name, last_name FROM users WHERE id IN (?,?,?)&quot;)
+</span><span class="keyword">val</span><span> </span><span class="identifier">multiQuery</span><span> = </span><span class="identifier">multiQuerySql</span><span>.</span><span class="identifier">queryOf</span><span>(</span><span class="identifier">columns</span><span>)
+</span><span class="comment">// multiQuery: Query0[Tuple2[String, String]] = doobie.util.query$Query$$anon$3@76880405
+</span><span>
+</span><span class="keyword">val</span><span> </span><span class="identifier">notInMultiQuerySql</span><span> = </span><span class="string-literal">sql&quot;SELECT </span><span class="substitution">$columns</span><span class="string-literal"> FROM </span><span class="substitution">$t</span><span class="string-literal"> WHERE </span><span class="substitution">${t.id notIn Vector(1, 2, 3)}</span><span class="string-literal">&quot;</span><span>
+</span><span class="comment">// notInMultiQuerySql: Fragment = Fragment(&quot;SELECT first_name, last_name FROM users WHERE id NOT IN (?,?,?)&quot;)
+</span><span class="keyword">val</span><span> </span><span class="identifier">notInMultiQuery</span><span> = </span><span class="identifier">multiQuerySql</span><span>.</span><span class="identifier">queryOf</span><span>(</span><span class="identifier">columns</span><span>)
+</span><span class="comment">// notInMultiQuery: Query0[Tuple2[String, String]] = doobie.util.query$Query$$anon$3@c8d0ca9</span></code></pre>
+        
+        <h2 id="nullability" class="section"><a class="anchor-link left" href="#nullability"><i class="icofont-laika link">&#xef71;</i></a>Nullability</h2>
+        <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">hasNoNicknameQuerySql</span><span> = </span><span class="string-literal">sql&quot;SELECT </span><span class="substitution">$columns</span><span class="string-literal"> FROM </span><span class="substitution">$t</span><span class="string-literal"> WHERE </span><span class="substitution">${t.nickname === None}</span><span class="string-literal">&quot;</span><span>
+</span><span class="comment">// hasNoNicknameQuerySql: Fragment = Fragment(&quot;SELECT first_name, last_name FROM users WHERE nickname IS NULL&quot;)
+</span><span class="keyword">val</span><span> </span><span class="identifier">hasNoNicknameQuery</span><span> = </span><span class="identifier">hasNoNicknameQuerySql</span><span>.</span><span class="identifier">queryOf</span><span>(</span><span class="identifier">columns</span><span>)
+</span><span class="comment">// hasNoNicknameQuery: Query0[Tuple2[String, String]] = doobie.util.query$Query$$anon$3@4e5c0b5f
+</span><span>
+</span><span class="keyword">val</span><span> </span><span class="identifier">hasNicknameQuerySql</span><span> = </span><span class="string-literal">sql&quot;SELECT </span><span class="substitution">$columns</span><span class="string-literal"> FROM </span><span class="substitution">$t</span><span class="string-literal"> WHERE </span><span class="substitution">${t.nickname !== None}</span><span class="string-literal">&quot;</span><span>
+</span><span class="comment">// hasNicknameQuerySql: Fragment = Fragment(&quot;SELECT first_name, last_name FROM users WHERE nickname IS NOT NULL&quot;)
+</span><span class="keyword">val</span><span> </span><span class="identifier">hasNicknameQuery</span><span> = </span><span class="identifier">hasNicknameQuerySql</span><span>.</span><span class="identifier">queryOf</span><span>(</span><span class="identifier">columns</span><span>)
+</span><span class="comment">// hasNicknameQuery: Query0[Tuple2[String, String]] = doobie.util.query$Query$$anon$3@231f86cb
+</span><span>
+</span><span class="keyword">val</span><span> </span><span class="identifier">hasSpecificNicknameQuerySql</span><span> = </span><span class="string-literal">sql&quot;SELECT </span><span class="substitution">$columns</span><span class="string-literal"> FROM </span><span class="substitution">$t</span><span class="string-literal"> WHERE </span><span class="substitution">${t.nickname === Some(&quot;Johnny&quot;)}</span><span class="string-literal">&quot;</span><span>
+</span><span class="comment">// hasSpecificNicknameQuerySql: Fragment = Fragment(&quot;SELECT first_name, last_name FROM users WHERE nickname = ?&quot;)
+</span><span class="keyword">val</span><span> </span><span class="identifier">hasSpecificNicknameQuery</span><span> = </span><span class="identifier">hasSpecificNicknameQuerySql</span><span>.</span><span class="identifier">queryOf</span><span>(</span><span class="identifier">columns</span><span>)
+</span><span class="comment">// hasSpecificNicknameQuery: Query0[Tuple2[String, String]] = doobie.util.query$Query$$anon$3@2dd8d84f</span></code></pre>
+        <p>Take note that:</p>
+        <ul>
+          <li>Column types are inferred from the column definitions.</li>
+          <li>The returned query type is inferred from the columns used in the query.</li>
+          <li>The operators are used to compare columns to values and they are typesafe.</li>
+        </ul>
+        
+        <h2 id="performing-table-joins" class="section"><a class="anchor-link left" href="#performing-table-joins"><i class="icofont-laika link">&#xef71;</i></a>Performing Table Joins</h2>
+        <p>Given that we have the following <code>addresses</code> table:</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">doobie</span><span>.*
+
+</span><span class="keyword">object</span><span> </span><span class="type-name">Addresses</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">TableDefinition</span><span>(</span><span class="string-literal">&quot;addresses&quot;</span><span>) {
+  </span><span class="keyword">val</span><span> </span><span class="identifier">id</span><span>: </span><span class="type-name">Column</span><span>[</span><span class="type-name">Int</span><span>] = </span><span class="type-name">Column</span><span>(</span><span class="string-literal">&quot;id&quot;</span><span>)
+  </span><span class="keyword">val</span><span> </span><span class="identifier">userId</span><span>: </span><span class="type-name">Column</span><span>[</span><span class="type-name">Int</span><span>] = </span><span class="type-name">Column</span><span>(</span><span class="string-literal">&quot;user_id&quot;</span><span>)
+  </span><span class="keyword">val</span><span> </span><span class="identifier">street</span><span>: </span><span class="type-name">Column</span><span>[</span><span class="type-name">String</span><span>] = </span><span class="type-name">Column</span><span>(</span><span class="string-literal">&quot;street&quot;</span><span>)
+  </span><span class="keyword">val</span><span> </span><span class="identifier">city</span><span>: </span><span class="type-name">Column</span><span>[</span><span class="type-name">String</span><span>] = </span><span class="type-name">Column</span><span>(</span><span class="string-literal">&quot;city&quot;</span><span>)
+  
+  </span><span class="keyword">case</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">Address</span><span>(</span><span class="identifier">street</span><span>: </span><span class="type-name">String</span><span>, </span><span class="identifier">city</span><span>: </span><span class="type-name">String</span><span>)
+  </span><span class="keyword">object</span><span> </span><span class="type-name">Address</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">WithSQLDefinition</span><span>[</span><span class="type-name">Address</span><span>](</span><span class="type-name">Composite</span><span>((
+    </span><span class="identifier">street</span><span>.</span><span class="identifier">sqlDef</span><span>, </span><span class="identifier">city</span><span>.</span><span class="identifier">sqlDef</span><span>
+  ))(</span><span class="type-name">Address</span><span>.</span><span class="identifier">apply</span><span>)(</span><span class="type-name">Tuple</span><span>.</span><span class="identifier">fromProductTyped</span><span>))
+}</span></code></pre>
+        <p>You can perform a table join as follows:</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">doobie</span><span>.*
+</span><span class="keyword">import</span><span> </span><span class="identifier">doobie</span><span>.</span><span class="identifier">implicits</span><span>.*
+
+</span><span class="keyword">val</span><span> </span><span class="identifier">id</span><span> = </span><span class="number-literal">42</span><span>
+</span><span class="comment">// id: Int = 42
+</span><span>
+</span><span class="comment">// Construct the prefixed versions of the tables. They will be known as `u` and `a` in the query.
+</span><span class="keyword">val</span><span> </span><span class="identifier">u</span><span> = </span><span class="type-name">Users</span><span> </span><span class="identifier">as</span><span> </span><span class="string-literal">&quot;u&quot;</span><span>
+</span><span class="comment">// u: AliasedTableDefinition[Users] = AliasedTableDefinition(
+//   name = Fragment(&quot;users AS u&quot;),
+//   alias = &quot;u&quot;,
+//   original = TableDefinition(users)
+// )
+</span><span class="keyword">val</span><span> </span><span class="identifier">a</span><span> = </span><span class="type-name">Addresses</span><span> </span><span class="identifier">as</span><span> </span><span class="string-literal">&quot;a&quot;</span><span>
+</span><span class="comment">// a: AliasedTableDefinition[Addresses] = AliasedTableDefinition(
+//   name = Fragment(&quot;addresses AS a&quot;),
+//   alias = &quot;a&quot;,
+//   original = TableDefinition(addresses)
+// )
+</span><span>
+</span><span class="comment">// Construct the prefixed versions of the columns to prevent name clashes between the tables.
+// They will be known as `u.first_name`, `u.last_name`, `a.street` and `a.city` in the query.
+</span><span class="keyword">val</span><span> </span><span class="identifier">columns</span><span> = </span><span class="type-name">Columns</span><span>((</span><span class="identifier">u</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">firstName</span><span>), </span><span class="identifier">u</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">lastName</span><span>), </span><span class="identifier">a</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">street</span><span>), </span><span class="identifier">a</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">city</span><span>)))
+</span><span class="comment">// columns: Columns[Tuple4[String, String, String, String]] = Columns(
+//   sql = Fragment(&quot;u.first_name, u.last_name, a.street, a.city&quot;),
+//   read = doobie.util.Read$$anon$5@4c24eaf6
+// )
+</span><span>
+</span><span class="comment">// You can join the tables using the `===` operator as well. You have to use the `c` method to access the columns.
+</span><span class="keyword">val</span><span> </span><span class="identifier">query1Sql</span><span> =
+  </span><span class="string-literal">sql&quot;SELECT </span><span class="substitution">$columns</span><span class="string-literal"> FROM </span><span class="substitution">$u</span><span class="string-literal"> INNER JOIN </span><span class="substitution">$a</span><span class="string-literal"> ON </span><span class="substitution">${u.c(_.id) === a.c(_.userId)}</span><span class="string-literal"> WHERE </span><span class="substitution">${u.c(_.id) === id}</span><span class="string-literal">&quot;</span><span>
+</span><span class="comment">// query1Sql: Fragment = Fragment(&quot;SELECT u.first_name, u.last_name, a.street, a.city FROM users AS u INNER JOIN addresses AS a ON u.id = a.user_id WHERE u.id = ?&quot;)
+</span><span class="keyword">val</span><span> </span><span class="identifier">query1</span><span> = </span><span class="identifier">query1Sql</span><span>.</span><span class="identifier">queryOf</span><span>(</span><span class="identifier">columns</span><span>)
+</span><span class="comment">// query1: Query0[Tuple4[String, String, String, String]] = doobie.util.query$Query$$anon$3@7de24eb4
+</span><span>
+</span><span class="comment">// Alternatively, instead of writing `u.c(_.id)` you can use `u(_.id)`, however that is less typesafe, as `apply` 
+// accepts any `SQLDefinition`, not just a `Column`.
+</span><span class="keyword">val</span><span> </span><span class="identifier">query2Sql</span><span> =
+  </span><span class="string-literal">sql&quot;SELECT </span><span class="substitution">$columns</span><span class="string-literal"> FROM </span><span class="substitution">$u</span><span class="string-literal"> INNER JOIN </span><span class="substitution">$a</span><span class="string-literal"> ON </span><span class="substitution">${u(_.id)}</span><span class="string-literal"> = </span><span class="substitution">${a(_.userId)}</span><span class="string-literal"> WHERE </span><span class="substitution">${u.c(_.id) === id}</span><span class="string-literal">&quot;</span><span>
+</span><span class="comment">// query2Sql: Fragment = Fragment(&quot;SELECT u.first_name, u.last_name, a.street, a.city FROM users AS u INNER JOIN addresses AS a ON u.id = a.user_id WHERE u.id = ?&quot;)
+</span><span class="keyword">val</span><span> </span><span class="identifier">query2</span><span> = </span><span class="identifier">query2Sql</span><span>.</span><span class="identifier">queryOf</span><span>(</span><span class="identifier">columns</span><span>)
+</span><span class="comment">// query2: Query0[Tuple4[String, String, String, String]] = doobie.util.query$Query$$anon$3@622dfbb9</span></code></pre>
+        
+        <h3 id="left-right-joins" class="section"><a class="anchor-link left" href="#left-right-joins"><i class="icofont-laika link">&#xef71;</i></a>Left/Right Joins</h3>
+        <p>When performing a left/right join one side, which was previously non-nullable, becomes nullable.</p>
+        <p>To deal with that, use <code>.option</code> when specifying your columns or SQLDefinitions.</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">doobie</span><span>.*
+</span><span class="keyword">import</span><span> </span><span class="identifier">doobie</span><span>.</span><span class="identifier">implicits</span><span>.*
+
+</span><span class="keyword">val</span><span> </span><span class="identifier">id</span><span> = </span><span class="number-literal">42</span><span>
+</span><span class="comment">// id: Int = 42
+</span><span>
+</span><span class="comment">// Construct the prefixed versions of the tables. They will be known as `u` and `a` in the query.
+</span><span class="keyword">val</span><span> </span><span class="identifier">u</span><span> = </span><span class="type-name">Users</span><span> </span><span class="identifier">as</span><span> </span><span class="string-literal">&quot;u&quot;</span><span>
+</span><span class="comment">// u: AliasedTableDefinition[Users] = AliasedTableDefinition(
+//   name = Fragment(&quot;users AS u&quot;),
+//   alias = &quot;u&quot;,
+//   original = TableDefinition(users)
+// )
+</span><span class="keyword">val</span><span> </span><span class="identifier">a</span><span> = </span><span class="type-name">Addresses</span><span> </span><span class="identifier">as</span><span> </span><span class="string-literal">&quot;a&quot;</span><span>
+</span><span class="comment">// a: AliasedTableDefinition[Addresses] = AliasedTableDefinition(
+//   name = Fragment(&quot;addresses AS a&quot;),
+//   alias = &quot;a&quot;,
+//   original = TableDefinition(addresses)
+// )
+</span><span>
+</span><span class="keyword">val</span><span> </span><span class="identifier">columns</span><span> = </span><span class="type-name">Columns</span><span>((</span><span class="identifier">u</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">firstName</span><span>), </span><span class="identifier">u</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">lastName</span><span>), </span><span class="identifier">a</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">street</span><span>.</span><span class="identifier">option</span><span>)))
+</span><span class="comment">// columns: Columns[Tuple3[String, String, Option[String]]] = Columns(
+//   sql = Fragment(&quot;u.first_name, u.last_name, a.street&quot;),
+//   read = doobie.util.Read$$anon$5@2e2293f0
+// )
+</span><span>
+</span><span class="keyword">val</span><span> </span><span class="identifier">query1Sql</span><span> =
+  </span><span class="string-literal">sql&quot;SELECT </span><span class="substitution">$columns</span><span class="string-literal"> FROM </span><span class="substitution">$u</span><span class="string-literal"> LEFT JOIN </span><span class="substitution">$a</span><span class="string-literal"> ON </span><span class="substitution">${u.c(_.id) === a.c(_.userId)}</span><span class="string-literal"> WHERE </span><span class="substitution">${u.c(_.id) === id}</span><span class="string-literal">&quot;</span><span>
+</span><span class="comment">// query1Sql: Fragment = Fragment(&quot;SELECT u.first_name, u.last_name, a.street FROM users AS u LEFT JOIN addresses AS a ON u.id = a.user_id WHERE u.id = ?&quot;)
+</span><span class="keyword">val</span><span> </span><span class="identifier">query1</span><span> = </span><span class="identifier">query1Sql</span><span>.</span><span class="identifier">queryOf</span><span>(</span><span class="identifier">columns</span><span>)
+</span><span class="comment">// query1: Query0[Tuple3[String, String, Option[String]]] = doobie.util.query$Query$$anon$3@9517511</span></code></pre>
+        
+        <h2 id="related-projects" class="section"><a class="anchor-link left" href="#related-projects"><i class="icofont-laika link">&#xef71;</i></a>Related projects</h2>
+        <p>You can use the <a href="https://jatcwang.github.io/doobieroll/docs/assembler">doobieroll assembler</a> to turn relational data back to object hierarchies. </p>
+
+        
+<hr class="footer-rule"/>
+<footer>
+  Site generated by <a href="https://typelevel.org/Laika/">Laika</a> with the Helium theme.
+</footer>
+
+
+      </main>
+
+    </div>
+
+  </body>
+
+</html>

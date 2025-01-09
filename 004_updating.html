@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Typelevel Laika + Helium Theme" />
-  <title>Introduction</title>
+  <title>Updating</title>
   
   <meta name="author" content="doobie-typesafe contributors"/>
   
@@ -24,7 +24,6 @@
   
   <link rel="stylesheet" type="text/css" href="helium/site/icofont.min.css" />
     <link rel="stylesheet" type="text/css" href="helium/site/laika-helium.css" />
-    <link rel="stylesheet" type="text/css" href="helium/site/landing-page.css" />
   <script src="helium/site/laika-helium.js"></script>
   
   
@@ -43,7 +42,7 @@
     
   </div>
 
-  <a class="icon-link glyph-link" href="#"><i class="icofont-laika home" title="Home">&#xef47;</i></a>
+  <a class="icon-link glyph-link" href="index.html"><i class="icofont-laika home" title="Home">&#xef47;</i></a>
 
   <div class="row links">
     
@@ -74,7 +73,7 @@
     <li class="level1 nav-leaf"><a href="001_table_definitions.html">Table Definitions</a></li>
     <li class="level1 nav-leaf"><a href="002_querying.html">Querying</a></li>
     <li class="level1 nav-leaf"><a href="003_inserting.html">Inserting</a></li>
-    <li class="level1 nav-leaf"><a href="004_updating.html">Updating</a></li>
+    <li class="level1 active nav-leaf"><a href="#">Updating</a></li>
     <li class="level1 nav-leaf"><a href="005_final_notes.html">Final Notes</a></li>
   </ul>
 
@@ -84,10 +83,9 @@
 
       
 <nav id="page-nav">
-  <p class="header"><a href="#">Introduction</a></p>
+  <p class="header"><a href="#">Updating</a></p>
 
   <ul class="nav-list">
-    <li class="level1 nav-leaf"><a href="#next-steps">Next steps</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -96,21 +94,46 @@
 
       <main class="content">
 
-        <h1 id="introduction" class="title">Introduction</h1>
-        <p><a href="https://github.com/arturaz/doobie-typesafe">doobie-typesafe</a> is a typesafe wrapper for <a href="https://tpolecat.github.io/doobie/">doobie</a> that allows you
-        to write queries in a typesafe way.</p>
-        <p>Goals of this library:</p>
-        <ul>
-          <li>Allow you to refer to SQL tables and columns in a typesafe way so that values of the wrong type cannot be used.</li>
-        </ul>
-        <p>Non-goals:</p>
-        <ul>
-          <li>Provide a typesafe DSL for writing SQL queries. You still have to write the SQL yourself and validate it using
-          <a href="https://tpolecat.github.io/doobie/docs/06-Checking.html">doobie typechecking facilities</a>.</li>
-        </ul>
-        
-        <h2 id="next-steps" class="section"><a class="anchor-link left" href="#next-steps"><i class="icofont-laika link">&#xef71;</i></a>Next steps</h2>
-        <p>Head over to <a href="000_installation.html">installation</a>.</p>
+        <h1 id="updating" class="title">Updating</h1>
+        <p>Update is very similar to insert:</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">data</span><span>.</span><span class="type-name">NonEmptyVector</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">doobie</span><span>.*
+</span><span class="keyword">import</span><span> </span><span class="identifier">doobie</span><span>.</span><span class="identifier">implicits</span><span>.*
+
+
+</span><span class="string-literal">sql&quot;&quot;&quot;
+${Users.updateTable(
+  Users.firstName --&gt; &quot;John&quot;,
+  Users.lastName --&gt; &quot;Doe&quot;
+)} WHERE </span><span class="substitution">${Users.id === 42}</span><span class="string-literal">
+&quot;&quot;&quot;</span><span>
+</span><span class="comment">// res0: Fragment = Fragment(&quot;
+//       UPDATE users SET first_name = ?, last_name = ? WHERE id = ?
+//       &quot;)
+</span><span>
+</span><span class="comment">// Or using a collection:
+</span><span class="string-literal">sql&quot;&quot;&quot;
+${Users.updateTable(NonEmptyVector.of(
+  Users.firstName --&gt; &quot;John&quot;,
+  Users.lastName --&gt; &quot;Doe&quot;
+))} WHERE </span><span class="substitution">${Users.id === 42}</span><span class="string-literal">
+&quot;&quot;&quot;</span><span>
+</span><span class="comment">// res1: Fragment = Fragment(&quot;
+//       UPDATE users SET first_name = ?, last_name = ? WHERE id = ?
+//       &quot;)</span></code></pre>
+        <p>You can use the composite columns as well:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">data</span><span>.</span><span class="type-name">NonEmptyVector</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">doobie</span><span>.*
+</span><span class="keyword">import</span><span> </span><span class="identifier">doobie</span><span>.</span><span class="identifier">implicits</span><span>.*
+
+</span><span class="string-literal">sql&quot;&quot;&quot;
+</span><span class="substitution">${Users.updateTable(Users.Names ==&gt; Users.Names(&quot;John&quot;, &quot;Doe&quot;, Some(&quot;Fast Johnny&quot;)))}</span><span class="string-literal">
+WHERE </span><span class="substitution">${Users.id === 42}</span><span class="string-literal">
+&quot;&quot;&quot;</span><span>
+</span><span class="comment">// res2: Fragment = Fragment(&quot;
+//       UPDATE users SET first_name = ?, last_name = ?, nickname = ?
+//       WHERE id = ?
+//       &quot;)</span></code></pre>
 
         
 <hr class="footer-rule"/>
