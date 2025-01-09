@@ -21,6 +21,8 @@ ThisBuild / tlSitePublishBranch := Some("main")
 ThisBuild / tlCiHeaderCheck := false
 ThisBuild / tlCiScalafmtCheck := false
 
+ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.temurin("21"))
+
 lazy val root = tlCrossRootProject.aggregate(core, tests)
 
 lazy val core = project
