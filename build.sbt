@@ -11,7 +11,8 @@ ThisBuild / developers ++= List(
 
 ThisBuild / scalaVersion := "3.3.4"
 ThisBuild / scalacOptions ++= Seq(
-  "-language:implicitConversions"
+  "-language:implicitConversions",
+  "-Werror",
 )
 
 ThisBuild / tlSitePublishBranch := Some("main")
