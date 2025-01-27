@@ -96,14 +96,14 @@
 
         <h1 id="installation" class="title">Installation</h1>
         <p>Add the following to your <code>build.sbt</code>:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> += </span><span class="string-literal">&quot;io.github.arturaz&quot;</span><span> %% </span><span class="string-literal">&quot;doobie-typesafe&quot;</span><span> % </span><span class="string-literal">&quot;0.3.0&quot;</span></code></pre>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> += </span><span class="string-literal">&quot;io.github.arturaz&quot;</span><span> %% </span><span class="string-literal">&quot;doobie-typesafe&quot;</span><span> % </span><span class="string-literal">&quot;0.4.0&quot;</span></code></pre>
         <p>Or <code>build.sc</code> if you are using <a href="https://mill-build.com">mill</a>:</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">override</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">ivyDeps</span><span> = </span><span class="type-name">Agg</span><span>(
-  </span><span class="string-literal">ivy&quot;io.github.arturaz::doobie-typesafe:0.3.0&quot;</span><span>
+  </span><span class="string-literal">ivy&quot;io.github.arturaz::doobie-typesafe:0.4.0&quot;</span><span>
 )</span></code></pre>
         <p>The code from <code>main</code> branch can be obtained with:</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">resolvers</span><span> ++= </span><span class="type-name">Resolver</span><span>.</span><span class="identifier">sonatypeOssRepos</span><span>(</span><span class="string-literal">&quot;snapshots&quot;</span><span>)
-</span><span class="identifier">libraryDependencies</span><span> += </span><span class="string-literal">&quot;io.github.arturaz&quot;</span><span> %% </span><span class="string-literal">&quot;doobie-typesafe&quot;</span><span> % </span><span class="string-literal">&quot;0.3.0-3-da59471-SNAPSHOT&quot;</span></code></pre>
+</span><span class="identifier">libraryDependencies</span><span> += </span><span class="string-literal">&quot;io.github.arturaz&quot;</span><span> %% </span><span class="string-literal">&quot;doobie-typesafe&quot;</span><span> % </span><span class="string-literal">&quot;0.4-39e4437-SNAPSHOT&quot;</span></code></pre>
         <p>For <a href="https://mill-build.com">mill</a>:</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span>  </span><span class="keyword">override</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">repositoriesTask</span><span> = </span><span class="type-name">T</span><span>.</span><span class="identifier">task</span><span> {
     </span><span class="keyword">super</span><span>.</span><span class="identifier">repositoriesTask</span><span>() ++ </span><span class="type-name">Seq</span><span>(
@@ -112,14 +112,13 @@
   }
 
 </span><span class="keyword">override</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">ivyDeps</span><span> = </span><span class="type-name">Agg</span><span>(
-  </span><span class="string-literal">ivy&quot;io.github.arturaz::doobie-typesafe:0.3.0-3-da59471-SNAPSHOT&quot;</span><span>
+  </span><span class="string-literal">ivy&quot;io.github.arturaz::doobie-typesafe:0.4-39e4437-SNAPSHOT&quot;</span><span>
 )</span></code></pre>
         <p><strong>The library is only published for Scala 3</strong> due to the use of 
         <a href="https://docs.scala-lang.org/scala3/reference/new-types/match-types.html">Scala 3 match types</a>.</p>
         <p>You can see all the published artifacts on 
         <a href="https://mvnrepository.com/artifact/io.github.arturaz/doobie-typesafe_3">MVN Repository</a>, 
         <a href="https://search.maven.org/artifact/io.github.arturaz/doobie-typesafe_3">Maven Central</a>,
-        <a href="https://oss.sonatype.org/#nexus-search;quick~doobie-typesafe">Sonatype</a> or
         <a href="https://repo1.maven.org/maven2/io/github/arturaz/doobie-typesafe_3/">raw Maven repository</a>.</p>
 
         
