@@ -1,29 +1,33 @@
 package doobie
 
-import cats.{Foldable, Semigroup}
+import cats.Foldable
+import cats.Semigroup
 import cats.syntax.foldable.*
 import doobie.implicits.*
 import fs2.Stream
 
 extension [F[_], A](fa: F[A])(using Foldable[F]) {
-  /**
-   * Example: 
-   * {{{
-   *   List(1, 2, 3).mapIntercalate("Words: ", ", ")((str, num) => s"$str$num")
-   *   // "Words: 1, 2, 3"
-   * }}}
-   * 
-   * @param starting the starting value
-   * @param separator the values that go between the elements
-   */
-  def mapIntercalate[B](starting: B, separator: B)(f: (B, A) => B)(using semi: Semigroup[B]): B = {
+
+  /** Example:
+    * {{{
+    *   List(1, 2, 3).mapIntercalate("Words: ", ", ")((str, num) => s"$str$num")
+    *   // "Words: 1, 2, 3"
+    * }}}
+    *
+    * @param starting
+    *   the starting value
+    * @param separator
+    *   the values that go between the elements
+    */
+  def mapIntercalate[B](starting: B, separator: B)(
+      f: (B, A) => B
+  )(using semi: Semigroup[B]): B = {
     var first = true
     fa.foldLeft(starting) { (b, a) =>
       if (first) {
         first = false
         f(b, a)
-      }
-      else {
+      } else {
         f(semi.combine(b, separator), a)
       }
     }
@@ -76,14 +80,22 @@ extension [A](iterable: IterableOnce[A])(using Write[A]) {
 }
 
 extension [A](update: Update[A]) {
-  /** As [[doobie.util.update.Update.updateManyWithGeneratedKeys]] but typesafe. */
+
+  /** As [[doobie.util.update.Update.updateManyWithGeneratedKeys]] but typesafe.
+    */
   def updateManyWithGeneratedKeys[K](
-    sqlDef: SQLDefinition[K]
+      sqlDef: SQLDefinition[K]
   ): UpdateManyWithGeneratedKeysSqlDefinitionPartiallyApplied[A, K] = {
     new UpdateManyWithGeneratedKeysSqlDefinitionPartiallyApplied[A, K] {
-      def withChunkSize[F[_]](as: F[A], chunkSize: Int)(implicit F: Foldable[F]): Stream[ConnectionIO, K] = {
+      def withChunkSize[F[_]](as: F[A], chunkSize: Int)(implicit
+          F: Foldable[F]
+      ): Stream[ConnectionIO, K] = {
         given Read[K] = sqlDef.read
-        update.updateManyWithGeneratedKeys(sqlDef.columns.toVector.map(_.sql.rawSql)*).withChunkSize(as, chunkSize)
+        update
+          .updateManyWithGeneratedKeys(
+            sqlDef.columns.toVector.map(_.sql.rawSql)*
+          )
+          .withChunkSize(as, chunkSize)
       }
     }
   }
@@ -93,5 +105,7 @@ trait UpdateManyWithGeneratedKeysSqlDefinitionPartiallyApplied[A, K] {
   def apply[F[_]](as: F[A])(implicit F: Foldable[F]): Stream[ConnectionIO, K] =
     withChunkSize(as, doobie.util.update.DefaultChunkSize)
 
-  def withChunkSize[F[_]](as: F[A], chunkSize: Int)(implicit F: Foldable[F]): Stream[ConnectionIO, K]
+  def withChunkSize[F[_]](as: F[A], chunkSize: Int)(implicit
+      F: Foldable[F]
+  ): Stream[ConnectionIO, K]
 }

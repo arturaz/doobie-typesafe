@@ -19,7 +19,10 @@ class ColumnTest extends CatsEffectSuite {
 
   test("prefixedWith twice") {
     val c = Column[Int]("foo")
-    assertEquals(c.prefixedWith("unused").prefixedWith("bar").name.toString, sql"bar.foo".toString)
+    assertEquals(
+      c.prefixedWith("unused").prefixedWith("bar").name.toString,
+      sql"bar.foo".toString
+    )
   }
 
   test("=== with Option") {

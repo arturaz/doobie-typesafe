@@ -1,9 +1,11 @@
 package doobie
 
 import cats.data.NonEmptyVector
-import doobie.util.{DBFixture, Helpers}
-import implicits.*
+import doobie.util.DBFixture
+import doobie.util.Helpers
 import munit.CatsEffectSuite
+
+import implicits.*
 
 class CompositeTest extends CatsEffectSuite with DBFixture with Helpers {
   test("sql") {
@@ -32,7 +34,8 @@ class CompositeTest extends CatsEffectSuite with DBFixture with Helpers {
 
   test("prefixedWith") {
     val p = Person `as` "p"
-    val expected = NonEmptyVector.of(p.c(_.nameCol) --> "Alice", p.c(_.ageCol) --> Age(42))
+    val expected =
+      NonEmptyVector.of(p.c(_.nameCol) --> "Alice", p.c(_.ageCol) --> Age(42))
     val actual = person.prefixedWith("p") ==> Person("Alice", Age(42))
     assertEquals(actual.map(_.toString()), expected.map(_.toString()))
   }
@@ -45,7 +48,8 @@ class CompositeTest extends CatsEffectSuite with DBFixture with Helpers {
   }
 
   val withTable = db.mapAsync { xa =>
-    val create = sql"create table $Person ($nameCol text not null, $ageCol int not null)".update.run
+    val create =
+      sql"create table $Person ($nameCol text not null, $ageCol int not null)".update.run
     create.transact(xa).void.map(_ => xa).unsafeToFuture()
   }
 
@@ -65,8 +69,10 @@ class CompositeTest extends CatsEffectSuite with DBFixture with Helpers {
 
     val sql = for {
       _ <-
-        Update[Person](sql"INSERT INTO $Person (${person.columnsSql}) VALUES (${person.valuesSql})".rawSql)
-        .updateMany(expected)
+        Update[Person](
+          sql"INSERT INTO $Person (${person.columnsSql}) VALUES (${person.valuesSql})".rawSql
+        )
+          .updateMany(expected)
       results <- sql"select $person from $Person".queryOf(person).to[List]
     } yield results
 
@@ -78,31 +84,58 @@ class CompositeTest extends CatsEffectSuite with DBFixture with Helpers {
 class NestedCompositeTest extends CatsEffectSuite with DBFixture with Helpers {
   case class PersonWithPets(person: Person, pets: Pets.Row)
   val personWithPets: SQLDefinition[PersonWithPets] =
-    Composite((person, Pets.Row.sqlDef))(PersonWithPets.apply)(Tuple.fromProductTyped)
+    Composite((person, Pets.Row.sqlDef))(PersonWithPets.apply)(
+      Tuple.fromProductTyped
+    )
   val personWithPetsTable = new TableDefinition("person_with_pets") {}
 
   test("sql") {
-    assertEquals(personWithPets.sql.toString, fr0"name, age, pet1, pet2".toString)
+    assertEquals(
+      personWithPets.sql.toString,
+      fr0"name, age, pet1, pet2".toString
+    )
   }
 
   test("==> #1") {
-    val actual = personWithPets ==> PersonWithPets(Person("Alice", Age(42)), Pets.Row("Fido", Some("Spot")))
-    val expected = NonEmptyVector.of(nameCol --> "Alice", ageCol --> Age(42), pet1Col --> "Fido", pet2Col --> Some("Spot"))
+    val actual = personWithPets ==> PersonWithPets(
+      Person("Alice", Age(42)),
+      Pets.Row("Fido", Some("Spot"))
+    )
+    val expected = NonEmptyVector.of(
+      nameCol --> "Alice",
+      ageCol --> Age(42),
+      pet1Col --> "Fido",
+      pet2Col --> Some("Spot")
+    )
     assertEquals(actual.map(_.toString()), expected.map(_.toString()))
   }
 
   test("==> #2") {
-    val actual = personWithPets ==> PersonWithPets(Person("Alice", Age(42)), Pets.Row("Fido", None))
-    val expected = NonEmptyVector.of(nameCol --> "Alice", ageCol --> Age(42), pet1Col --> "Fido", pet2Col --> None)
+    val actual = personWithPets ==> PersonWithPets(
+      Person("Alice", Age(42)),
+      Pets.Row("Fido", None)
+    )
+    val expected = NonEmptyVector.of(
+      nameCol --> "Alice",
+      ageCol --> Age(42),
+      pet1Col --> "Fido",
+      pet2Col --> None
+    )
     assertEquals(actual.map(_.toString()), expected.map(_.toString()))
   }
 
   test("columns") {
-    assertEquals(personWithPets.columns, NonEmptyVector.of(nameCol, ageCol, pet1Col, pet2Col))
+    assertEquals(
+      personWithPets.columns,
+      NonEmptyVector.of(nameCol, ageCol, pet1Col, pet2Col)
+    )
   }
 
   test("columnsSql") {
-    assertEquals(personWithPets.columnsSql.toString, fr0"$nameCol, $ageCol, $pet1Col, $pet2Col".toString)
+    assertEquals(
+      personWithPets.columnsSql.toString,
+      fr0"$nameCol, $ageCol, $pet1Col, $pet2Col".toString
+    )
   }
 
   val withTable = db.mapAsync { xa =>
@@ -114,10 +147,16 @@ class NestedCompositeTest extends CatsEffectSuite with DBFixture with Helpers {
   }
 
   withTable.test("select") { xa =>
-    val expected = PersonWithPets(Person("Alice", Age(42)), Pets.Row("Fido", None))
+    val expected =
+      PersonWithPets(Person("Alice", Age(42)), Pets.Row("Fido", None))
     val sql = for {
-      _ <- insertInto(personWithPetsTable, personWithPets ==> expected).update.run
-      result <- sql"select $personWithPets from $personWithPetsTable".queryOf(personWithPets).unique
+      _ <- insertInto(
+        personWithPetsTable,
+        personWithPets ==> expected
+      ).update.run
+      result <- sql"select $personWithPets from $personWithPetsTable"
+        .queryOf(personWithPets)
+        .unique
     } yield result
 
     val actual = sql.transact(xa)
@@ -125,28 +164,51 @@ class NestedCompositeTest extends CatsEffectSuite with DBFixture with Helpers {
   }
 
   withTable.test("select columns") { xa =>
-    val expected = PersonWithPets(Person("Alice", Age(42)), Pets.Row("Fido", None))
+    val expected =
+      PersonWithPets(Person("Alice", Age(42)), Pets.Row("Fido", None))
     val sql = for {
-      _ <- insertInto(personWithPetsTable, personWithPets ==> expected).update.run
-      columns = Columns((nameCol.sqlDef, ageCol.sqlDef, pet1Col.sqlDef, pet2Col.sqlDef))
-      result <- sql"select $columns from $personWithPetsTable".queryOf(columns).unique
+      _ <- insertInto(
+        personWithPetsTable,
+        personWithPets ==> expected
+      ).update.run
+      columns = Columns(
+        (nameCol.sqlDef, ageCol.sqlDef, pet1Col.sqlDef, pet2Col.sqlDef)
+      )
+      result <- sql"select $columns from $personWithPetsTable"
+        .queryOf(columns)
+        .unique
     } yield result
 
     val actual = sql.transact(xa)
-    actual.assertEquals((expected.person.name, expected.person.age, expected.pets.pet1, expected.pets.pet2))
+    actual.assertEquals(
+      (
+        expected.person.name,
+        expected.person.age,
+        expected.pets.pet1,
+        expected.pets.pet2
+      )
+    )
   }
 
   case class PersonWithPetsWrapper(personWithPets: PersonWithPets)
-  object PersonWithPetsWrapper extends WithSQLDefinition[PersonWithPetsWrapper](
-    personWithPets.imap(PersonWithPetsWrapper(_))(_.personWithPets)
-  )
+  object PersonWithPetsWrapper
+      extends WithSQLDefinition[PersonWithPetsWrapper](
+        personWithPets.imap(PersonWithPetsWrapper(_))(_.personWithPets)
+      )
 
   withTable.test("select wrapped") { xa =>
-    val expected = PersonWithPetsWrapper(PersonWithPets(Person("Alice", Age(42)), Pets.Row("Fido", None)))
+    val expected = PersonWithPetsWrapper(
+      PersonWithPets(Person("Alice", Age(42)), Pets.Row("Fido", None))
+    )
 
     val sql = for {
-      _ <- insertInto(personWithPetsTable, personWithPets ==> expected.personWithPets).update.run
-      result <- sql"select $PersonWithPetsWrapper from $personWithPetsTable".queryOf(PersonWithPetsWrapper).unique
+      _ <- insertInto(
+        personWithPetsTable,
+        personWithPets ==> expected.personWithPets
+      ).update.run
+      result <- sql"select $PersonWithPetsWrapper from $personWithPetsTable"
+        .queryOf(PersonWithPetsWrapper)
+        .unique
     } yield result
 
     val actual = sql.transact(xa)

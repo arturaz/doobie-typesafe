@@ -1,8 +1,7 @@
 package doobie
 
-/**
- * Generates some boring code.
- */
+/** Generates some boring code.
+  */
 @main
 def generate(): Unit = {
   val upTo = 22

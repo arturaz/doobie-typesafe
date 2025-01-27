@@ -39,5 +39,4 @@ override def ivyDeps = Agg(
 You can see all the published artifacts on 
 [MVN Repository](https://mvnrepository.com/artifact/io.github.arturaz/doobie-typesafe_3), 
 [Maven Central](https://search.maven.org/artifact/io.github.arturaz/doobie-typesafe_3),
-[Sonatype](https://oss.sonatype.org/#nexus-search;quick~doobie-typesafe) or
 [raw Maven repository](https://repo1.maven.org/maven2/io/github/arturaz/doobie-typesafe_3/).

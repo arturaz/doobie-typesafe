@@ -1,4 +1,4 @@
-ThisBuild / tlBaseVersion := "0.3"
+ThisBuild / tlBaseVersion := "0.4"
 
 ThisBuild / organization := "io.github.arturaz"
 ThisBuild / organizationName := "arturaz"
@@ -12,14 +12,13 @@ ThisBuild / developers ++= List(
 ThisBuild / scalaVersion := "3.3.4"
 ThisBuild / scalacOptions ++= Seq(
   "-language:implicitConversions",
-  "-Werror",
+  "-Werror"
 )
 
 ThisBuild / tlSitePublishBranch := Some("main")
 
 // Disable the checks, I don't want to deal with them right now.
 ThisBuild / tlCiHeaderCheck := false
-ThisBuild / tlCiScalafmtCheck := false
 
 ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.temurin("21"))
 
@@ -32,8 +31,9 @@ lazy val core = project
     description := "Typesafe table definitions for doobie",
     libraryDependencies ++= Seq(
       // https://mvnrepository.com/artifact/org.tpolecat/doobie-core
-      "org.tpolecat" %% "doobie-core" % "1.0.0-RC6"
-    ),
+      // RC6 is broken and should not be used until RC7: https://github.com/typelevel/doobie/milestone/15
+      "org.tpolecat" %% "doobie-core" % "1.0.0-RC5"
+    )
   )
 
 lazy val tests = project
@@ -49,8 +49,8 @@ lazy val tests = project
       // https://mvnrepository.com/artifact/org.typelevel/munit-cats-effect
       "org.typelevel" %% "munit-cats-effect" % "2.0.0" % Test,
       // https://mvnrepository.com/artifact/com.h2database/h2
-      "com.h2database" % "h2" % "2.3.232" % Test,
-    ),
+      "com.h2database" % "h2" % "2.3.232" % Test
+    )
   )
 
 lazy val docs = project
@@ -60,6 +60,6 @@ lazy val docs = project
   .settings(
     scalacOptions --= Seq(
       // Disable unused import warnings for the docs as they report false positives.
-      "-Wunused:imports",
+      "-Wunused:imports"
     )
   )

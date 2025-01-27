@@ -17,6 +17,9 @@ class ColumnsTest extends CatsEffectSuite {
 
   test("queryOf") {
     val columns = Columns((nameCol.sqlDef, ageCol.sqlDef))
-    assertEquals(sql"SELECT $columns FROM $Person".queryOf(columns).sql, "SELECT name, age FROM person")
+    assertEquals(
+      sql"SELECT $columns FROM $Person".queryOf(columns).sql,
+      "SELECT name, age FROM person"
+    )
   }
 }

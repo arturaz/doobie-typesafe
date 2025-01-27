@@ -4,7 +4,8 @@ import cats.effect.IO
 import doobie.Transactor
 import munit.*
 
-import java.sql.{Connection, DriverManager}
+import java.sql.Connection
+import java.sql.DriverManager
 
 trait DBFixture { self: FunSuite =>
   val db = FunFixture[Transactor.Aux[IO, Connection]](

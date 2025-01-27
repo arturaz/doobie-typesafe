@@ -1,37 +1,45 @@
 package doobie
 
-import cats.{Invariant, Reducible}
+import cats.Invariant
+import cats.Reducible
 import cats.data.NonEmptyVector
 import cats.syntax.show.*
 import doobie.enumerated.Nullability
 import doobie.implicits.*
 import doobie.syntax.SqlInterpolator.SingleFragment
 
-import scala.annotation.{targetName, unused}
+import scala.annotation.targetName
+import scala.annotation.unused
 import scala.util.NotGiven
 
-/**
- * A definition of a single column in the database of type [[A]].
- *
- * Example:
- * {{{
- *   object SpecialWeaponStats extends TableDefinition("special_weapon_stats") {
- *     lazy val userId = Column[UserId]("user_id")
- *     lazy val weaponId = Column[WeaponGuid]("weapon_id")
- *     lazy val kills = Column[WeaponKills]("kills")
- *   }
- * }}}
- *
- * @param rawName the name of the column in the database
- * @param prefix the prefix of the table that this column belongs to, if specified. This is [[Some]] after you use
- *               [[prefixedWith]].
- * */
+/** A definition of a single column in the database of type [[A]].
+  *
+  * Example:
+  * {{{
+  *   object SpecialWeaponStats extends TableDefinition("special_weapon_stats") {
+  *     lazy val userId = Column[UserId]("user_id")
+  *     lazy val weaponId = Column[WeaponGuid]("weapon_id")
+  *     lazy val kills = Column[WeaponKills]("kills")
+  *   }
+  * }}}
+  *
+  * @param rawName
+  *   the name of the column in the database
+  * @param prefix
+  *   the prefix of the table that this column belongs to, if specified. This is
+  *   [[Some]] after you use [[prefixedWith]].
+  */
 case class Column[A] private (
-  rawName: String, prefix: Option[String], isOption: Boolean
-)(
-  using val read: Read[A], val write: Write[A]
-) extends SQLDefinition[A] with TypedFragment[A] { self =>
-  val name: Fragment = Fragment.const0(prefix.fold(rawName)(p => s"$p.$rawName"))
+    rawName: String,
+    prefix: Option[String],
+    isOption: Boolean
+)(using
+    val read: Read[A],
+    val write: Write[A]
+) extends SQLDefinition[A]
+    with TypedFragment[A] { self =>
+  val name: Fragment =
+    Fragment.const0(prefix.fold(rawName)(p => s"$p.$rawName"))
 
   override def fragment: Fragment = name
 
@@ -40,7 +48,7 @@ case class Column[A] private (
   override def toString: String = {
     val s = prefix match
       case Some(prefix) => show"$prefix.$rawName"
-      case None => rawName
+      case None         => rawName
 
     val isOpt = if (isOption) "?" else ""
 
@@ -59,8 +67,12 @@ case class Column[A] private (
     write.puts.head._1.asInstanceOf[Put[A]]
   }
 
-  /** Creates an [[Option]] version of the [[Column]], giving that it is not already an [[Option]]. */
-  override def option[B](using @unused ng: NotGiven[A =:= Option[B]]): Column[Option[A]] =
+  /** Creates an [[Option]] version of the [[Column]], giving that it is not
+    * already an [[Option]].
+    */
+  override def option[B](using
+      @unused ng: NotGiven[A =:= Option[B]]
+  ): Column[Option[A]] =
     Column[Option[A]](rawName, prefix, isOption = true)(using
       read = Read.fromGetOption(self.get),
       write = Write.fromPutOption(self.put)
@@ -69,7 +81,7 @@ case class Column[A] private (
   override def prefixedWith(prefix: String): Column[A] =
     copy(prefix = Some(prefix))
 
-  override def imap[B](mapper: A => B)(contramapper: B => A): Column[B] = 
+  override def imap[B](mapper: A => B)(contramapper: B => A): Column[B] =
     Column[B](rawName = rawName, prefix = prefix, isOption = isOption)(using
       read = read.map(mapper),
       write = write.contramap(contramapper)
@@ -84,15 +96,16 @@ case class Column[A] private (
   /** Returns a tuple of `(column_name, A)`. */
   @targetName("bindColumnTypedFragment")
   inline def -->(a: TypedFragment[A]): (Fragment, Fragment) = (name, a)
-  
+
   /** For use in `UPDATE table_name SET name = ?` queries. */
   inline def setTo(a: A): Fragment = fr0"$name = $a"
-  
+
   /** For use in `UPDATE table_name SET name = ?` queries. */
   inline def setTo(a: TypedFragment[A]): Fragment = fr0"$name = $a"
 
   @targetName("bindColumns")
-  def ==>(a: A): NonEmptyVector[(Fragment, Fragment)] = NonEmptyVector.of(this --> a)
+  def ==>(a: A): NonEmptyVector[(Fragment, Fragment)] =
+    NonEmptyVector.of(this --> a)
 
   /** Returns a `column_name = $a` [[Fragment]]. */
   @targetName("equals")
@@ -157,12 +170,17 @@ case class Column[A] private (
   def -(a: TypedFragment[A]): TypedFragment[A] = fr0"$name - $a"
 
   /** Returns a `column_name IN ($values)` [[Fragment]]. */
-  def in[F[_]](values: F[A])(using Reducible[F], Write[A]): TypedFragment[Boolean] = {
-    val valuesFragment = values.mapIntercalate(fr0"", fr0",")((acc, a) => fr0"$acc$a")
+  def in[F[_]](
+      values: F[A]
+  )(using Reducible[F], Write[A]): TypedFragment[Boolean] = {
+    val valuesFragment =
+      values.mapIntercalate(fr0"", fr0",")((acc, a) => fr0"$acc$a")
     fr0"$name IN ($valuesFragment)"
   }
 
-  /** Returns `column_name IN (fs0, fs1, ...)` if there were elements or `FALSE` otherwise. */
+  /** Returns `column_name IN (fs0, fs1, ...)` if there were elements or `FALSE`
+    * otherwise.
+    */
   def in(values: IterableOnce[A])(using Write[A]): TypedFragment[Boolean] = {
     val result = values.iterator.mkFragmentsDetailed(fr0",")
 
@@ -170,46 +188,64 @@ case class Column[A] private (
   }
 
   /** Returns a `column_name NOT IN ($values)` [[Fragment]]. */
-  def notIn[F[_]](values: F[A])(using Reducible[F], Write[A]): TypedFragment[Boolean] = {
-    val valuesFragment = values.mapIntercalate(fr0"", fr0",")((acc, a) => fr0"$acc$a")
+  def notIn[F[_]](
+      values: F[A]
+  )(using Reducible[F], Write[A]): TypedFragment[Boolean] = {
+    val valuesFragment =
+      values.mapIntercalate(fr0"", fr0",")((acc, a) => fr0"$acc$a")
     fr0"$name NOT IN ($valuesFragment)"
   }
 
-  /** Returns `column_name NOT IN (fs0, fs1, ...)` if there were elements or `TRUE` otherwise. */
+  /** Returns `column_name NOT IN (fs0, fs1, ...)` if there were elements or
+    * `TRUE` otherwise.
+    */
   def notIn(values: IterableOnce[A])(using Write[A]): TypedFragment[Boolean] = {
     val result = values.iterator.mkFragmentsDetailed(fr0",")
 
-    if (result.hadElements) fr0"$name NOT IN (${result.fragment})" else fr0"TRUE"
+    if (result.hadElements) fr0"$name NOT IN (${result.fragment})"
+    else fr0"TRUE"
   }
 }
 object Column {
   def apply[A](rawName: String)(using r: Read[A], w: Write[A]) =
-    new Column[A](rawName, prefix = None, isOption = r.gets.forall(_._2 == Nullability.Nullable))
+    new Column[A](
+      rawName,
+      prefix = None,
+      isOption = r.gets.forall(_._2 == Nullability.Nullable)
+    )
 
   given toSqlDefinition[A]: Conversion[Column[A], SQLDefinition[A]] = identity
   given toFragment[A]: Conversion[Column[A], Fragment] = _.sql
-  given toSingleFragment[A]: Conversion[Column[A], SingleFragment[A]] = c => SingleFragment(c.sql)
+  given toSingleFragment[A]: Conversion[Column[A], SingleFragment[A]] = c =>
+    SingleFragment(c.sql)
 
   given invariant: Invariant[Column] with {
-    override def imap[A, B](fa: Column[A])(f: A => B)(g: B => A): Column[B] = fa.imap(f)(g)
+    override def imap[A, B](fa: Column[A])(f: A => B)(g: B => A): Column[B] =
+      fa.imap(f)(g)
   }
 
-  extension [A] (c: Column[Option[A]]) {
+  extension [A](c: Column[Option[A]]) {
     def isNull: TypedFragment[Boolean] = fr0"${c.name} IS NULL"
     def isNotNull: TypedFragment[Boolean] = fr0"${c.name} IS NOT NULL"
 
-    //noinspection MutatorLikeMethodIsParameterless
+    // noinspection MutatorLikeMethodIsParameterless
     def setToNull: Fragment = fr0"${c.name} = NULL"
 
     /** Returns a `column_name = $a` [[Fragment]].
-      * 
-      * @note SQL supports checking for equality between nullable and non-nullable columns. */
+      *
+      * @note
+      *   SQL supports checking for equality between nullable and non-nullable
+      *   columns.
+      */
     @targetName("equalsColumn")
     def ===(a: Column[A]): TypedFragment[Boolean] = fr0"${c.name} = $a"
 
     /** Returns a `column_name <> $a` [[Fragment]].
-      * 
-      * @note SQL supports checking for equality between nullable and non-nullable columns. */
+      *
+      * @note
+      *   SQL supports checking for equality between nullable and non-nullable
+      *   columns.
+      */
     @targetName("notEqualsColumn")
     def !==(a: Column[A]): TypedFragment[Boolean] = fr0"${c.name} <> $a"
   }
