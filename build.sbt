@@ -9,7 +9,7 @@ ThisBuild / developers ++= List(
   tlGitHubDev("arturaz", "Artūras Šlajus")
 )
 
-ThisBuild / scalaVersion := "3.3.4"
+ThisBuild / scalaVersion := "3.3.5"
 ThisBuild / scalacOptions ++= Seq(
   "-language:implicitConversions",
   "-Werror"
