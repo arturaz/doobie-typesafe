@@ -121,3 +121,15 @@ Users.Row.selectAll
 ```
 
 Check their source code for the documentation.
+
+### Read-only Composites
+
+You can also define composite columns that are read-only and can be used in queries using `Composite.readOnly`. Note 
+that the members in tuple must be `SQLDefinitionRead[?]`, which can be obtained with `.sqlDefr`.
+
+```scala mdoc
+
+Composite.readOnly((
+    Users.firstName.sqlDefr, Users.lastName.sqlDefr, Users.nickname.sqlDefr
+))(Users.Names.apply)
+```
