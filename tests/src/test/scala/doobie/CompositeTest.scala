@@ -28,14 +28,14 @@ class CompositeTest extends CatsEffectSuite with DBFixture with Helpers {
     assertEquals(person.columns, NonEmptyVector.of(nameCol, ageCol))
   }
 
-  test("columnsSql") {
-    assertEquals(person.columnsSql.toString, fr0"$nameCol, $ageCol".toString)
+  test("sql") {
+    assertEquals(person.sql.toString, fr0"$nameCol, $ageCol".toString)
   }
 
   test("prefixedWith") {
     val p = Person `as` "p"
     val expected =
-      NonEmptyVector.of(p.c(_.nameCol) --> "Alice", p.c(_.ageCol) --> Age(42))
+      NonEmptyVector.of(p(_.nameCol) --> "Alice", p(_.ageCol) --> Age(42))
     val actual = person.prefixedWith("p") ==> Person("Alice", Age(42))
     assertEquals(actual.map(_.toString()), expected.map(_.toString()))
   }
@@ -64,15 +64,16 @@ class CompositeTest extends CatsEffectSuite with DBFixture with Helpers {
     actual.assertEquals(expected)
   }
 
-  withTable.test("select with mapped columns") { xa =>
+  withTable.test("select with mapped SQLDefinition") { xa =>
     val expected = Person("Alice", Age(42))
-    val personColumns = Columns(Person.nameCol, Person.ageCol).map(Person.apply)
-    val columns = Columns((person.sqlDef, personColumns)).map { case (p1, p2) =>
-      Person(p1.name + p2.name, Age(p1.age.age + p2.age.age))
+    val table = Person as "p"
+    val personRead = person.map(p => (p.age, p.name))
+    val columns = Columns((table(_ => person), table(_ => personRead))).map { case (p1, (age, name)) =>
+      Person(p1.name + name, Age(p1.age.age + age.age))
     }
     val sql = for {
       _ <- insertInto(Person, person ==> expected).update.run
-      result <- sql"select $columns from $Person".queryOf(columns).unique
+      result <- sql"select $columns from $table".queryOf(columns).unique
     } yield result
 
     val actual = sql.transact(xa)
@@ -85,7 +86,7 @@ class CompositeTest extends CatsEffectSuite with DBFixture with Helpers {
     val sql = for {
       _ <-
         Update[Person](
-          sql"INSERT INTO $Person (${person.columnsSql}) VALUES (${person.valuesSql})".rawSql
+          sql"INSERT INTO $Person (${person.sql}) VALUES (${person.valuesSql})".rawSql
         )
           .updateMany(expected)
       results <- sql"select $person from $Person".queryOf(person).to[List]
@@ -148,7 +149,7 @@ class NestedCompositeTest extends CatsEffectSuite with DBFixture with Helpers {
 
   test("columnsSql") {
     assertEquals(
-      personWithPets.columnsSql.toString,
+      personWithPets.sql.toString,
       fr0"$nameCol, $ageCol, $pet1Col, $pet2Col".toString
     )
   }

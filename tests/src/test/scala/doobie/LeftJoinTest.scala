@@ -38,8 +38,7 @@ class LeftJoinTest extends CatsEffectSuite with DBFixture with Helpers {
     val columns =
       Columns((persons(_.nameCol), pets(_.pet1Col.option), pets(_.pet2Col)))
     val select =
-      sql"SELECT $columns FROM $persons LEFT JOIN $pets ON ${persons.c(_.nameCol) === pets
-          .c(_ => nameCol)}"
+      sql"SELECT $columns FROM $persons LEFT JOIN $pets ON ${persons(_.nameCol) === pets(_ => nameCol)}"
         .query[(String, Option[String], Option[String])]
 
     val io = (for {
@@ -62,10 +61,10 @@ class LeftJoinTest extends CatsEffectSuite with DBFixture with Helpers {
     val columns = Columns((persons(_.nameCol), pets(_.Row.option)))
 
     val select =
-      sql"""SELECT $columns FROM $persons LEFT JOIN $pets ON ${persons.c(
+      sql"""SELECT $columns FROM $persons LEFT JOIN $pets ON ${persons(
           _.nameCol
-        ) === pets.c(_ => nameCol)}
-            WHERE ${persons.c(_.nameCol) === "Alice"}
+        ) === pets(_ => nameCol)}
+            WHERE ${persons(_.nameCol) === "Alice"}
          """
         .queryOf(columns)
 
@@ -89,10 +88,10 @@ class LeftJoinTest extends CatsEffectSuite with DBFixture with Helpers {
     val columns = Columns((persons(_.nameCol), pets(_.Row.option)))
 
     val select =
-      sql"""SELECT $columns FROM $persons LEFT JOIN $pets ON ${persons.c(
+      sql"""SELECT $columns FROM $persons LEFT JOIN $pets ON ${persons(
           _.nameCol
-        ) === pets.c(_ => nameCol)}
-            WHERE ${persons.c(_.nameCol) === "Bob"}
+        ) === pets(_ => nameCol)}
+            WHERE ${persons(_.nameCol) === "Bob"}
          """
         .queryOf(columns)
 
@@ -116,10 +115,10 @@ class LeftJoinTest extends CatsEffectSuite with DBFixture with Helpers {
     val columns = Columns((persons(_.nameCol), pets(_.InvertedRow.option)))
 
     val select =
-      sql"""SELECT $columns FROM $persons LEFT JOIN $pets ON ${persons.c(
+      sql"""SELECT $columns FROM $persons LEFT JOIN $pets ON ${persons(
           _.nameCol
-        ) === pets.c(_ => nameCol)}
-            WHERE ${persons.c(_.nameCol) === "Bob"}
+        ) === pets(_ => nameCol)}
+            WHERE ${persons(_.nameCol) === "Bob"}
          """
         .queryOf(columns)
 
@@ -141,10 +140,10 @@ class LeftJoinTest extends CatsEffectSuite with DBFixture with Helpers {
     val columns = Columns((persons(_.nameCol), pets(_.Row.option)))
 
     val select =
-      sql"""SELECT $columns FROM $persons LEFT JOIN $pets ON ${persons.c(
+      sql"""SELECT $columns FROM $persons LEFT JOIN $pets ON ${persons(
           _.nameCol
-        ) === pets.c(_ => nameCol)}
-            WHERE ${persons.c(_.nameCol) === "Charlie"}
+        ) === pets(_ => nameCol)}
+            WHERE ${persons(_.nameCol) === "Charlie"}
          """
         .queryOf(columns)
 

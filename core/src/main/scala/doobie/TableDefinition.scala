@@ -123,11 +123,9 @@ case class AliasedTableDefinition[T <: TableDefinition](
   /** [[alias]] as a [[Fragment]]. */
   def aliasFr: Fragment = Fragment.const0(alias)
 
-  /** Prevents reinitialization of aliased [[SQLDefinition]]s over successive
-    * [[prefix]] invocations.
-    */
+  /** Prevents reinitialization of aliased valuess over successive [[prefix]] invocations. */
   private val aliasedDefinitionsCache =
-    collection.concurrent.TrieMap.empty[SQLDefinition[?], SQLDefinition[?]]
+    collection.concurrent.TrieMap.empty[Any, Any]
 
   /** Allows you to prefix column names with the alias in the SQL definitions.
     *
@@ -139,7 +137,10 @@ case class AliasedTableDefinition[T <: TableDefinition](
     *   u.c(_.id).name == sql"u.${u.original.id.name}"
     * }}}
     */
-  def c[A](f: T => Column[A]): Column[A] = prefix(f).asInstanceOf[Column[A]]
+  @deprecated("Use `apply` instead", since = "0.4.0")
+  def c[A](f: T => Column[A]): Column[A] = prefix(f)
+
+  def apply[A](f: T => Column[A]): Column[A] = prefix(f)
 
   /** Allows you to prefix column names with the alias in the SQL definitions.
     *
@@ -149,20 +150,15 @@ case class AliasedTableDefinition[T <: TableDefinition](
     *   u.c(_.complexSqlDefinition).sql == sql"u.name, u.surname, u.age"
     * }}}
     */
-  // We have to specify two methods, because if we do this:
-  //   def apply[A, Def[X] <: SQLDefinition[X]](f: T => Def[A]): Def[A]
-  // The compiler freaks out in the use site with type error when you use this in sql interpolation, at least on 3.2.2.
-  //   Found:    (_$7.nameCol : doobie.Column[String])
-  //   Required: doobie.SQLDefinition[A] & doobie.syntax.SqlInterpolator.SingleFragment[A]
-  //
-  //   where:    A is a type variable with constraint
   def apply[A](f: T => SQLDefinition[A]): SQLDefinition[A] = prefix(f)
 
-  private def prefix[A](f: T => SQLDefinition[A]): SQLDefinition[A] = {
+  def apply[A](f: T => SQLDefinitionRead[A]): SQLDefinitionRead[A] = prefix(f)
+
+  private def prefix[A <: TypedMultiFragment.Prefixable[?]](f: T => A): A = {
     val picked = f(original)
     aliasedDefinitionsCache
       .getOrElseUpdate(picked, picked.prefixedWith(alias))
-      .asInstanceOf[SQLDefinition[A]]
+      .asInstanceOf[A]
   }
 }
 

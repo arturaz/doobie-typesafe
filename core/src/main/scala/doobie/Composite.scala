@@ -88,6 +88,7 @@ object Composite {
       isOption: Boolean
   )(map: Iterator[Any] => R)(unmap: R => Iterator[Any]): SQLDefinition[R] = {
     val isOpt = isOption
+    val mapFn = map
 
     new SQLDefinition[R] { self =>
       override type Self[X] = SQLDefinition[X]
@@ -107,7 +108,7 @@ object Composite {
       override lazy val read =
         TypedMultiFragment.read(
           sqlDefinitions.map(sqlDef => sqlDef: TypedMultiFragment[?])
-        )(map)
+        )(mapFn)
 
       override lazy val write = Write.Composite[R](
         sqlDefinitions.iterator.map(_.write).toList,
@@ -274,7 +275,7 @@ object Composite {
                       case Value.OptionNone => None
                     }
                 }
-              val result = map(membersInCorrectOrder)
+              val result = mapFn(membersInCorrectOrder)
               Some(result)
             case State.ExpectedNoneButHadSomes(somes) =>
               val str = somes.toList.reverseIterator
@@ -320,7 +321,7 @@ object Composite {
       }
 
       override def prefixedWith(prefix: String): SQLDefinition[R] = {
-        unsafe(sqlDefinitions.map(_.prefixedWith(prefix)), isOption)(map)(unmap)
+        unsafe(sqlDefinitions.map(_.prefixedWith(prefix)), isOption)(mapFn)(unmap)
       }
     }
   }
@@ -328,28 +329,30 @@ object Composite {
   /** Overload for a single element tuple. */
   def apply[A, R](
       sqlDefinition: SQLDefinition[A]
-  )(map: A => R)(unmap: R => A): SQLDefinition[R] =
+  )(map: A => R)(unmap: R => A): SQLDefinition[R] = {
+    val mapFn = map
+
     new SQLDefinition[R] {
       override type Self[X] = SQLDefinition[X]
 
       override def toString = sqlDefinition.toString()
 
       override def prefixedWith(prefix: String) =
-        apply(sqlDefinition.prefixedWith(prefix))(map)(unmap)
-      override val read = sqlDefinition.read.map(map)
+        apply(sqlDefinition.prefixedWith(prefix))(mapFn)(unmap)
+      override val read = sqlDefinition.read.map(mapFn)
       override val write = sqlDefinition.write.contramap(unmap)
 
       override def imap[B](mapper: R => B)(
           contramapper: B => R
       ): SQLDefinition[B] =
-        apply(sqlDefinition)(map.andThen(mapper))(contramapper.andThen(unmap))
+        apply(sqlDefinition)(mapFn.andThen(mapper))(contramapper.andThen(unmap))
 
       override def isOption: Boolean = sqlDefinition.isOption
 
       def option[R1](using
           @unused ng: NotGiven[R =:= Option[R1]]
       ): SQLDefinition[Option[R]] =
-        sqlDefinition.option.imap(_.map(map))(_.map(unmap))
+        sqlDefinition.option.imap(_.map(mapFn))(_.map(unmap))
 
       @targetName("bindColumns")
       override def ==>(value: R) = sqlDefinition ==> unmap(value)
@@ -357,6 +360,7 @@ object Composite {
       override def ===(value: R) = sqlDefinition === unmap(value)
       override def columns = sqlDefinition.columns
     }
+  }
 
   /** [[SQLDefinition]] when the element is defined by two [[Option]]al values.
     *
