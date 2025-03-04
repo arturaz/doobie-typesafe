@@ -1,5 +1,6 @@
 package doobie
 
+import cats.data.NonEmptyVector
 import doobie.implicits.*
 import doobie.syntax.SqlInterpolator.SingleFragment
 
@@ -17,9 +18,14 @@ import doobie.syntax.SqlInterpolator.SingleFragment
   * @tparam QueryResult
   *   the type of `Fragment.queryOf(columns)` expression.
   */
-case class Columns[QueryResult] private (sql: Fragment, read: Read[QueryResult]) {
+case class Columns[QueryResult] private (
+    sql: Fragment,
+    read: Read[QueryResult]
+) extends TypedMultiFragment[QueryResult] {
   def map[QueryResult2](f: QueryResult => QueryResult2): Columns[QueryResult2] =
     Columns(sql, read.map(f))
+
+  override def fragment: Fragment = sql
 }
 object Columns {
   given Conversion[Columns[?], Fragment] = _.sql
@@ -44,7 +50,9 @@ object Columns {
       T <: Tuple: Tuple.IsMappedBy[TypedMultiFragment]
   ](t: T): Columns[TypedMultiFragment.TupleValues[T]] = {
     val tmfs =
-      t.productIterator.map(_.asInstanceOf[TypedMultiFragment[?]]).toVector
+      NonEmptyVector.fromVectorUnsafe(
+        t.productIterator.map(_.asInstanceOf[TypedMultiFragment[?]]).toVector
+      )
     val fragment = tmfs.iterator.map(_.fragment).mkFragments(fr",")
     val read = TypedMultiFragment.read(tmfs)(iterator =>
       Tuple

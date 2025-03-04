@@ -2,15 +2,13 @@ package doobie
 
 import cats.data.NonEmptyList
 import cats.data.NonEmptyVector
+import doobie.implicits.*
 
 import scala.Tuple.InverseMap
 import scala.Tuple.IsMappedBy
 import scala.annotation.targetName
 import scala.annotation.unused
 import scala.util.NotGiven
-import scala.util.control.NonFatal
-
-import implicits.*
 
 object Composite {
 
@@ -108,48 +106,55 @@ object Composite {
 
       override lazy val read =
         TypedMultiFragment.read(
-          sqlDefinitions.toVector,
-          sqlResultAccumulatedLengths
+          sqlDefinitions.map(sqlDef => sqlDef: TypedMultiFragment[?])
         )(map)
 
-      override lazy val write = new Write(
-        puts = sqlDefinitions.iterator.flatMap(_.write.puts).toList,
-        toList = r => {
-          val values = unmap(r)
-          sqlDefinitions.iterator
-            .zip(values)
-            .flatMap { case (r, v) =>
-              try {
-                r.write.toList(v.asInstanceOf[r.Result])
-              } catch {
-                case NonFatal(e) =>
-                  throw new Exception(
-                    s"Error while writing $r with value $v",
-                    e
-                  )
-              }
-            }
-            .toList
-        },
-        unsafeSet = (ps, idx, r) => {
-          val values = unmap(r)
-          sqlDefinitions.iterator
-            .zip(sqlResultAccumulatedLengths)
-            .zip(values)
-            .foreach { case ((r, toSkip), v) =>
-              r.write.unsafeSet(ps, idx + toSkip, v.asInstanceOf[r.Result])
-            }
-        },
-        unsafeUpdate = (rs, idx, r) => {
-          val values = unmap(r)
-          sqlDefinitions.iterator
-            .zip(sqlResultAccumulatedLengths)
-            .zip(values)
-            .foreach { case ((r, toSkip), v) =>
-              r.write.unsafeUpdate(rs, idx + toSkip, v.asInstanceOf[r.Result])
-            }
-        }
+      override lazy val write = Write.Composite[R](
+        sqlDefinitions.iterator.map(_.write).toList,
+        r => unmap(r).toList
       )
+// Previous implementation:
+//      new Write[R] {
+//        override def puts = sqlDefinitions.iterator.flatMap(_.write.puts).toList
+//
+//        override def toList(r: R) = {
+//          val values = unmap(r)
+//          sqlDefinitions.iterator
+//            .zip(values)
+//            .flatMap { case (r, v) =>
+//              try {
+//                r.write.toList(v.asInstanceOf[r.Result])
+//              } catch {
+//                case NonFatal(e) =>
+//                  throw new Exception(
+//                    s"Error while writing $r with value $v",
+//                    e
+//                  )
+//              }
+//            }
+//            .toList
+//        }
+//
+//        override def unsafeSet(ps: PreparedStatement, startIdx: Int, r: R): Unit = {
+//          val values = unmap(r)
+//          sqlDefinitions.iterator
+//            .zip(sqlResultAccumulatedLengths)
+//            .zip(values)
+//            .foreach { case ((r, toSkip), v) =>
+//              r.write.unsafeSet(ps, startIdx + toSkip, v.asInstanceOf[r.Result])
+//            }
+//        }
+//
+//        override def unsafeUpdate(rs: ResultSet, startIdx: Int, r: R): Unit = {
+//          val values = unmap(r)
+//          sqlDefinitions.iterator
+//            .zip(sqlResultAccumulatedLengths)
+//            .zip(values)
+//            .foreach { case ((r, toSkip), v) =>
+//              r.write.unsafeUpdate(rs, startIdx + toSkip, v.asInstanceOf[r.Result])
+//            }
+//        }
+//      }
 
       override def imap[B](mapper: R => B)(
           contramapper: B => R

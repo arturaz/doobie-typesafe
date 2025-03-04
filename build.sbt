@@ -31,8 +31,7 @@ lazy val core = project
     description := "Typesafe table definitions for doobie",
     libraryDependencies ++= Seq(
       // https://mvnrepository.com/artifact/org.tpolecat/doobie-core
-      // RC6 is broken and should not be used until RC7: https://github.com/typelevel/doobie/milestone/15
-      "org.tpolecat" %% "doobie-core" % "1.0.0-RC5"
+      "org.tpolecat" %% "doobie-core" % "1.0.0-RC8"
     )
   )
 

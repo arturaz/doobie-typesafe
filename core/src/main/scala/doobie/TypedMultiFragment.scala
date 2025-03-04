@@ -1,8 +1,7 @@
 package doobie
 
+import cats.data.NonEmptyVector
 import doobie.syntax.SqlInterpolator.SingleFragment
-
-import scala.util.control.NonFatal
 
 /** A doobie fragment that potentially refers to a multiple columns/values (such
   * as [[SQLDefinition]]) which produces a value of type [[A]].
@@ -47,34 +46,33 @@ object TypedMultiFragment {
 
   /** Constructs a [[Read]] for a bunch of [[TypedMultiFragment]]s. */
   def read[A](
-      tmfs: Vector[TypedMultiFragment[?]]
+      tmfs: NonEmptyVector[TypedMultiFragment[?]]
   )(map: Iterator[Any] => A): Read[A] =
-    read(tmfs, sqlResultAccumulatedLengths(tmfs))(map)
-
-  /** Constructs a [[Read]] for a bunch of [[TypedMultiFragment]]s. */
-  def read[A](
-      tmfs: Vector[TypedMultiFragment[?]],
-      sqlResultAccumulatedLengths: Vector[Int]
-  )(map: Iterator[Any] => A): Read[A] = {
-    new Read(
-      gets = tmfs.iterator.flatMap(_.read.gets).toList,
-      unsafeGet = (rs, idx) => {
-        val iterator = tmfs.iterator.zip(sqlResultAccumulatedLengths).map {
-          case (r, toSkip) =>
-            val position = idx + toSkip
-            try {
-              r.read.unsafeGet(rs, position)
-            } catch {
-              case NonFatal(e) =>
-                throw new Exception(
-                  s"Error while reading $r at position $position from a ResultSet",
-                  e
-                )
-            }
-        }
-
-        map(iterator)
+    tmfs.tail
+      .foldLeft(tmfs.head.read.map(_ :: Nil): Read[List[Any]]) {
+        case (r, tmf) =>
+          Read.Composite(r, tmf.read, (list, value) => value :: list)
       }
-    )
-  }
+      .map(list => map(list.reverseIterator))
+// Previous implementation:
+//    new Read(
+//      gets = tmfs.iterator.flatMap(_.read.gets).toList,
+//      unsafeGet = (rs, idx) => {
+//        val iterator = tmfs.iterator.zip(sqlResultAccumulatedLengths).map {
+//          case (r, toSkip) =>
+//            val position = idx + toSkip
+//            try {
+//              r.read.unsafeGet(rs, position)
+//            } catch {
+//              case NonFatal(e) =>
+//                throw new Exception(
+//                  s"Error while reading $r at position $position from a ResultSet",
+//                  e
+//                )
+//            }
+//        }
+//
+//        map(iterator)
+//      }
+//    )
 }

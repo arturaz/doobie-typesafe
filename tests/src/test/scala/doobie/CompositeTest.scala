@@ -64,6 +64,21 @@ class CompositeTest extends CatsEffectSuite with DBFixture with Helpers {
     actual.assertEquals(expected)
   }
 
+  withTable.test("select with mapped columns") { xa =>
+    val expected = Person("Alice", Age(42))
+    val personColumns = Columns(Person.nameCol, Person.ageCol).map(Person.apply)
+    val columns = Columns((person.sqlDef, personColumns)).map { case (p1, p2) =>
+      Person(p1.name + p2.name, Age(p1.age.age + p2.age.age))
+    }
+    val sql = for {
+      _ <- insertInto(Person, person ==> expected).update.run
+      result <- sql"select $columns from $Person".queryOf(columns).unique
+    } yield result
+
+    val actual = sql.transact(xa)
+    actual.assertEquals(Person("AliceAlice", Age(84)))
+  }
+
   withTable.test("batch insert") { xa =>
     val expected = List(Person("Alice", Age(42)), Person("Bob", Age(43)))
 
