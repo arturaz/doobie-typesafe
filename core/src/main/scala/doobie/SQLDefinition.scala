@@ -15,6 +15,13 @@ import scala.util.NotGiven
 trait SQLDefinitionRead[A] extends TypedMultiFragment.Prefixable[A] { self =>
   type Self[X] <: SQLDefinitionRead[X]
 
+  /** To allow widening the type of [[Column]] and similar ones to [[SQLDefinitionRead]].
+   *
+   * This is useful when working with tuples of [[SQLDefinition]]s, because
+   * `(Column[Int], Column[String])` is not the same thing as `(SQLDefinitionRead[Int], SQLDefinitionRead[String])`.
+   */
+  inline def sqlDefr: SQLDefinitionRead[A] = this
+
   /** SQL that lists all of the columns to get this SQL result. */
   lazy val sql: Fragment = columns.map(_.name).intercalate(fr",")
 
@@ -22,9 +29,6 @@ trait SQLDefinitionRead[A] extends TypedMultiFragment.Prefixable[A] { self =>
 
   /** Vector of columns */
   def columns: NonEmptyVector[Column[?]]
-
-  /** Was this [[SQLDefinition]] created from a [[option]] method. */
-  def isOption: Boolean
 
   given Read[A] = read
 
@@ -36,8 +40,6 @@ object SQLDefinitionRead {
     override type Self[X] = SQLDefinitionRead[X]
 
     override def columns: NonEmptyVector[Column[?]] = self.columns
-
-    override def isOption: Boolean = self.isOption
 
     override def prefixedWith(prefix: String): SQLDefinitionRead[B] = Mapped(self.prefixedWith(prefix), mapper)
 
@@ -82,6 +84,9 @@ trait SQLDefinition[A] extends SQLDefinitionRead[A] { self =>
   def write: Write[A]
 
   given Write[A] = write
+
+  /** Was this [[SQLDefinition]] created from a [[option]] method. */
+  def isOption: Boolean
 
   /** Creates an [[Option]] version of the [[SQLDefinition]], giving that it is
    * not already an [[Option]].

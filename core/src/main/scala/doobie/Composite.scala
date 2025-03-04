@@ -18,6 +18,12 @@ object Composite {
     */
   type TupleValues[T <: Tuple] = InverseMap[T, SQLDefinition]
 
+  /** Removes the [[SQLDefinitionRead]] wrapper from each member of the tuple.
+   *
+   * e.g. turns `(SQLDefinitionRead[A], SQLDefinitionRead[B])` into `(A, B)`.
+   */
+  type TupleValuesRO[T <: Tuple] = InverseMap[T, SQLDefinitionRead]
+
   /** Allows you to define a composite type that is composed of other
     * [[SQLDefinition]]s.
     *
@@ -64,14 +70,100 @@ object Composite {
 
     unsafe(sqlDefs, isOption = false) { iterator =>
       val untypedTuple = Tuple.fromArray(iterator.toArray)
-//      println(
-//        s"""---
-//           |sqlDefs: $sqlDefs
-//           |untypedTuple: $untypedTuple
-//           |""".stripMargin)
       val tuple = untypedTuple.asInstanceOf[TupleValues[T]]
       map(tuple)
     }(r => unmap(r).productIterator)
+  }
+
+  /** Overload for a single element tuple. */
+  def apply[A, R](
+    sqlDefinition: SQLDefinition[A]
+  )(map: A => R)(unmap: R => A): SQLDefinition[R] = {
+    val mapFn = map
+
+    new SQLDefinition[R] {
+      override type Self[X] = SQLDefinition[X]
+
+      override def toString = sqlDefinition.toString()
+
+      override def prefixedWith(prefix: String) =
+        apply(sqlDefinition.prefixedWith(prefix))(mapFn)(unmap)
+      override val read = sqlDefinition.read.map(mapFn)
+      override val write = sqlDefinition.write.contramap(unmap)
+
+      override def imap[B](mapper: R => B)(
+        contramapper: B => R
+      ): SQLDefinition[B] =
+        apply(sqlDefinition)(mapFn.andThen(mapper))(contramapper.andThen(unmap))
+
+      override def isOption: Boolean = sqlDefinition.isOption
+
+      def option[R1](using
+        @unused ng: NotGiven[R =:= Option[R1]]
+      ): SQLDefinition[Option[R]] =
+        sqlDefinition.option.imap(_.map(mapFn))(_.map(unmap))
+
+      @targetName("bindColumns")
+      override def ==>(value: R) = sqlDefinition ==> unmap(value)
+      @targetName("equals")
+      override def ===(value: R) = sqlDefinition === unmap(value)
+      override def columns = sqlDefinition.columns
+    }
+  }
+
+  /** Creates a composite [[SQLDefinitionRead]] which cannot write values. */
+  def readOnly[T <: Tuple : IsMappedBy[SQLDefinitionRead], R](
+    sqlDefinitionsTuple: T
+  )(map: TupleValuesRO[T] => R): SQLDefinitionRead[R] = {
+    val sqlDefs = NonEmptyVector.fromVectorUnsafe(
+      sqlDefinitionsTuple.productIterator
+        .map(_.asInstanceOf[SQLDefinitionRead[?]])
+        .toVector
+    )
+
+    unsafeReadOnly(sqlDefs) { iterator =>
+      val untypedTuple = Tuple.fromArray(iterator.toArray)
+      val tuple = untypedTuple.asInstanceOf[TupleValuesRO[T]]
+      map(tuple)
+    }
+  }
+
+
+  /** Overload for a single element tuple. */
+  def readOnly[A, R](
+    sqlDefinition: SQLDefinitionRead[A]
+  )(map: A => R): SQLDefinitionRead[R] = sqlDefinition.map(map)
+
+
+  /** Type-unsafe version of [[readOnly]].
+    *
+    * @param map
+    *   Function to map the components that make up the composite type to the
+    *   final result.
+    */
+  def unsafeReadOnly[R](
+      sqlDefinitions: NonEmptyVector[SQLDefinitionRead[?]]
+  )(map: Iterator[Any] => R): SQLDefinitionRead[R] = {
+    val mapFn = map
+
+    new SQLDefinitionRead[R] { self =>
+      override type Self[X] = SQLDefinitionRead[X]
+
+      override def toString =
+        s"CompositeReadOnly(columns: ${columns.iterator.map(_.rawName).mkString(", ")})"
+
+      override lazy val columns: NonEmptyVector[Column[?]] =
+        sqlDefinitions.flatMap(_.columns)
+
+      override lazy val read =
+        TypedMultiFragment.read(
+          sqlDefinitions.map(sqlDef => sqlDef: TypedMultiFragment[?])
+        )(mapFn)
+
+      override def prefixedWith(prefix: String): SQLDefinitionRead[R] = {
+        unsafeReadOnly(sqlDefinitions.map(_.prefixedWith(prefix)))(mapFn)
+      }
+    }
   }
 
   /** Type-unsafe version of [[apply]].
@@ -323,42 +415,6 @@ object Composite {
       override def prefixedWith(prefix: String): SQLDefinition[R] = {
         unsafe(sqlDefinitions.map(_.prefixedWith(prefix)), isOption)(mapFn)(unmap)
       }
-    }
-  }
-
-  /** Overload for a single element tuple. */
-  def apply[A, R](
-      sqlDefinition: SQLDefinition[A]
-  )(map: A => R)(unmap: R => A): SQLDefinition[R] = {
-    val mapFn = map
-
-    new SQLDefinition[R] {
-      override type Self[X] = SQLDefinition[X]
-
-      override def toString = sqlDefinition.toString()
-
-      override def prefixedWith(prefix: String) =
-        apply(sqlDefinition.prefixedWith(prefix))(mapFn)(unmap)
-      override val read = sqlDefinition.read.map(mapFn)
-      override val write = sqlDefinition.write.contramap(unmap)
-
-      override def imap[B](mapper: R => B)(
-          contramapper: B => R
-      ): SQLDefinition[B] =
-        apply(sqlDefinition)(mapFn.andThen(mapper))(contramapper.andThen(unmap))
-
-      override def isOption: Boolean = sqlDefinition.isOption
-
-      def option[R1](using
-          @unused ng: NotGiven[R =:= Option[R1]]
-      ): SQLDefinition[Option[R]] =
-        sqlDefinition.option.imap(_.map(mapFn))(_.map(unmap))
-
-      @targetName("bindColumns")
-      override def ==>(value: R) = sqlDefinition ==> unmap(value)
-      @targetName("equals")
-      override def ===(value: R) = sqlDefinition === unmap(value)
-      override def columns = sqlDefinition.columns
     }
   }
 

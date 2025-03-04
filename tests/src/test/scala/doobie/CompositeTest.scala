@@ -64,12 +64,12 @@ class CompositeTest extends CatsEffectSuite with DBFixture with Helpers {
     actual.assertEquals(expected)
   }
 
-  withTable.test("select with mapped SQLDefinition") { xa =>
+  withTable.test("select with readonly composite") { xa =>
     val expected = Person("Alice", Age(42))
     val table = Person as "p"
-    val personRead = person.map(p => (p.age, p.name))
-    val columns = Columns((table(_ => person), table(_ => personRead))).map { case (p1, (age, name)) =>
-      Person(p1.name + name, Age(p1.age.age + age.age))
+    val personRead = Composite.readOnly((ageCol.sqlDefr, nameCol.sqlDefr))((age, name) => Person(name, age))
+    val columns = Columns((table(_ => person), table(_ => personRead))).map { case (p1, p2) =>
+      Person(p1.name + p2.name, Age(p1.age.age + p2.age.age))
     }
     val sql = for {
       _ <- insertInto(Person, person ==> expected).update.run
