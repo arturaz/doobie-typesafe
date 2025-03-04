@@ -17,7 +17,10 @@ import doobie.syntax.SqlInterpolator.SingleFragment
   * @tparam QueryResult
   *   the type of `Fragment.queryOf(columns)` expression.
   */
-case class Columns[QueryResult] private (sql: Fragment, read: Read[QueryResult])
+case class Columns[QueryResult] private (sql: Fragment, read: Read[QueryResult]) {
+  def map[QueryResult2](f: QueryResult => QueryResult2): Columns[QueryResult2] =
+    Columns(sql, read.map(f))
+}
 object Columns {
   given Conversion[Columns[?], Fragment] = _.sql
   given Conversion[Columns[?], SingleFragment[?]] = _.sql
