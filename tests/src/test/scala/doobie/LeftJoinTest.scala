@@ -158,4 +158,32 @@ class LeftJoinTest extends CatsEffectSuite with DBFixture with Helpers {
       )
     )
   }
+
+  withTable.test("composite: with read-only composite") { xa =>
+    val persons = Person `as` "person"
+    val pets = Pets `as` "pet"
+
+    case class Result(name: String, pet: Option[Pets.Row])
+    val composite = Composite.readOnly((persons(_.nameCol).sqlDefr, pets(_.Row.option).sqlDefr))(Result.apply)
+
+    val columns = Columns(composite)
+
+    val select =
+      sql"""SELECT $columns FROM $persons LEFT JOIN $pets ON ${persons(_.nameCol) === pets(_ => nameCol)}
+         """
+        .queryOf(columns)
+
+    val io = (for {
+      rows <- select.to[List]
+    } yield rows).transact(xa)
+
+    assertIO(
+      io,
+      List(
+        Result("Alice", Some(Pets.Row("Fido", Some("Spot")))),
+        Result("Bob", Some(Pets.Row("Chuck", None))),
+        Result("Charlie", None)
+      )
+    )
+  }
 }
