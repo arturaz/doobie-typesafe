@@ -33,7 +33,7 @@ lazy val core = project
       // https://mvnrepository.com/artifact/org.tpolecat/doobie-core
       "org.tpolecat" %% "doobie-core" % "1.0.0-RC8"
     ),
-    addCommandAlias("prepareCi", "scalafmtAll;scalafmtSbt;scalafixAll;test")
+    addCommandAlias("prepareCi", "scalafmtAll;scalafmtSbt;scalafixAll;test;docs/tlSite;mimaReportBinaryIssues")
   )
 
 lazy val tests = project

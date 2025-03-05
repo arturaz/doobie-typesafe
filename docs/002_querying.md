@@ -111,16 +111,11 @@ val a = Addresses as "a"
 // They will be known as `u.first_name`, `u.last_name`, `a.street` and `a.city` in the query.
 val columns = Columns((u(_.firstName), u(_.lastName), a(_.street), a(_.city)))
 
-// You can join the tables using the `===` operator as well. You have to use the `c` method to access the columns.
-val query1Sql =
-  sql"SELECT $columns FROM $u INNER JOIN $a ON ${u.c(_.id) === a.c(_.userId)} WHERE ${u.c(_.id) === id}"
-val query1 = query1Sql.queryOf(columns)
+// You can join the tables using the `===` operator as well.
+val querySql =
+  sql"SELECT $columns FROM $u INNER JOIN $a ON ${u(_.id) === a(_.userId)} WHERE ${u(_.id) === id}"
+val query = querySql.queryOf(columns)
 
-// Alternatively, instead of writing `u.c(_.id)` you can use `u(_.id)`, however that is less typesafe, as `apply` 
-// accepts any `SQLDefinition`, not just a `Column`.
-val query2Sql =
-  sql"SELECT $columns FROM $u INNER JOIN $a ON ${u(_.id)} = ${a(_.userId)} WHERE ${u.c(_.id) === id}"
-val query2 = query2Sql.queryOf(columns)
 ```
 
 ### Left/Right Joins
@@ -142,7 +137,7 @@ val a = Addresses as "a"
 val columns = Columns((u(_.firstName), u(_.lastName), a(_.street.option)))
 
 val query1Sql =
-  sql"SELECT $columns FROM $u LEFT JOIN $a ON ${u.c(_.id) === a.c(_.userId)} WHERE ${u.c(_.id) === id}"
+  sql"SELECT $columns FROM $u LEFT JOIN $a ON ${u(_.id) === a(_.userId)} WHERE ${u(_.id) === id}"
 val query1 = query1Sql.queryOf(columns)
 ```
 
