@@ -103,7 +103,7 @@
 )</span></code></pre>
         <p>The code from <code>main</code> branch can be obtained with:</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">resolvers</span><span> ++= </span><span class="type-name">Resolver</span><span>.</span><span class="identifier">sonatypeOssRepos</span><span>(</span><span class="string-literal">&quot;snapshots&quot;</span><span>)
-</span><span class="identifier">libraryDependencies</span><span> += </span><span class="string-literal">&quot;io.github.arturaz&quot;</span><span> %% </span><span class="string-literal">&quot;doobie-typesafe&quot;</span><span> % </span><span class="string-literal">&quot;0.4-32c5166-SNAPSHOT&quot;</span></code></pre>
+</span><span class="identifier">libraryDependencies</span><span> += </span><span class="string-literal">&quot;io.github.arturaz&quot;</span><span> %% </span><span class="string-literal">&quot;doobie-typesafe&quot;</span><span> % </span><span class="string-literal">&quot;0.4.0-1-2b915d4-SNAPSHOT&quot;</span></code></pre>
         <p>For <a href="https://mill-build.com">mill</a>:</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span>  </span><span class="keyword">override</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">repositoriesTask</span><span> = </span><span class="type-name">T</span><span>.</span><span class="identifier">task</span><span> {
     </span><span class="keyword">super</span><span>.</span><span class="identifier">repositoriesTask</span><span>() ++ </span><span class="type-name">Seq</span><span>(
@@ -112,7 +112,7 @@
   }
 
 </span><span class="keyword">override</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">ivyDeps</span><span> = </span><span class="type-name">Agg</span><span>(
-  </span><span class="string-literal">ivy&quot;io.github.arturaz::doobie-typesafe:0.4-32c5166-SNAPSHOT&quot;</span><span>
+  </span><span class="string-literal">ivy&quot;io.github.arturaz::doobie-typesafe:0.4.0-1-2b915d4-SNAPSHOT&quot;</span><span>
 )</span></code></pre>
         <p><strong>The library is only published for Scala 3</strong> due to the use of 
         <a href="https://docs.scala-lang.org/scala3/reference/new-types/match-types.html">Scala 3 match types</a>.</p>
