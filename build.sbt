@@ -32,7 +32,8 @@ lazy val core = project
     libraryDependencies ++= Seq(
       // https://mvnrepository.com/artifact/org.tpolecat/doobie-core
       "org.tpolecat" %% "doobie-core" % "1.0.0-RC8"
-    )
+    ),
+    addCommandAlias("prepareCi", "scalafmtAll;scalafmtSbt;scalafixAll;test")
   )
 
 lazy val tests = project

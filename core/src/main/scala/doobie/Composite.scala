@@ -19,9 +19,9 @@ object Composite {
   type TupleValues[T <: Tuple] = InverseMap[T, SQLDefinition]
 
   /** Removes the [[SQLDefinitionRead]] wrapper from each member of the tuple.
-   *
-   * e.g. turns `(SQLDefinitionRead[A], SQLDefinitionRead[B])` into `(A, B)`.
-   */
+    *
+    * e.g. turns `(SQLDefinitionRead[A], SQLDefinitionRead[B])` into `(A, B)`.
+    */
   type TupleValuesRO[T <: Tuple] = InverseMap[T, SQLDefinitionRead]
 
   /** Allows you to define a composite type that is composed of other
@@ -77,7 +77,7 @@ object Composite {
 
   /** Overload for a single element tuple. */
   def apply[A, R](
-    sqlDefinition: SQLDefinition[A]
+      sqlDefinition: SQLDefinition[A]
   )(map: A => R)(unmap: R => A): SQLDefinition[R] = {
     val mapFn = map
 
@@ -92,14 +92,14 @@ object Composite {
       override val write = sqlDefinition.write.contramap(unmap)
 
       override def imap[B](mapper: R => B)(
-        contramapper: B => R
+          contramapper: B => R
       ): SQLDefinition[B] =
         apply(sqlDefinition)(mapFn.andThen(mapper))(contramapper.andThen(unmap))
 
       override def isOption: Boolean = sqlDefinition.isOption
 
       def option[R1](using
-        @unused ng: NotGiven[R =:= Option[R1]]
+          @unused ng: NotGiven[R =:= Option[R1]]
       ): SQLDefinition[Option[R]] =
         sqlDefinition.option.imap(_.map(mapFn))(_.map(unmap))
 
@@ -112,8 +112,8 @@ object Composite {
   }
 
   /** Creates a composite [[SQLDefinitionRead]] which cannot write values. */
-  def readOnly[T <: Tuple : IsMappedBy[SQLDefinitionRead], R](
-    sqlDefinitionsTuple: T
+  def readOnly[T <: Tuple: IsMappedBy[SQLDefinitionRead], R](
+      sqlDefinitionsTuple: T
   )(map: TupleValuesRO[T] => R): SQLDefinitionRead[R] = {
     val sqlDefs = NonEmptyVector.fromVectorUnsafe(
       sqlDefinitionsTuple.productIterator
@@ -128,12 +128,10 @@ object Composite {
     }
   }
 
-
   /** Overload for a single element tuple. */
   def readOnly[A, R](
-    sqlDefinition: SQLDefinitionRead[A]
+      sqlDefinition: SQLDefinitionRead[A]
   )(map: A => R): SQLDefinitionRead[R] = sqlDefinition.map(map)
-
 
   /** Type-unsafe version of [[readOnly]].
     *
@@ -413,7 +411,9 @@ object Composite {
       }
 
       override def prefixedWith(prefix: String): SQLDefinition[R] = {
-        unsafe(sqlDefinitions.map(_.prefixedWith(prefix)), isOption)(mapFn)(unmap)
+        unsafe(sqlDefinitions.map(_.prefixedWith(prefix)), isOption)(mapFn)(
+          unmap
+        )
       }
     }
   }

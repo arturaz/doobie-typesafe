@@ -34,8 +34,10 @@ object TypedMultiFragment {
       }
 
   given toFragment[A]: Conversion[TypedMultiFragment[A], Fragment] = _.fragment
-  given toSingleFragment[A]: Conversion[TypedMultiFragment[A], SingleFragment[A]] = _.fragment
-  given read[A](using definition: TypedMultiFragment[A]): Read[A] = definition.read
+  given toSingleFragment[A]
+      : Conversion[TypedMultiFragment[A], SingleFragment[A]] = _.fragment
+  given read[A](using definition: TypedMultiFragment[A]): Read[A] =
+    definition.read
   given toRead[A]: Conversion[TypedMultiFragment[A], Read[A]] = _.read
 
   /** A [[TypedMultiFragment]] that can be prefixed. */
@@ -43,19 +45,17 @@ object TypedMultiFragment {
     type Self[X] <: Prefixable[X]
 
     /** Prefixes all column names with `prefix.`. If this already had a prefix,
-     * the prefix is replaced.
-     */
+      * the prefix is replaced.
+      */
     def prefixedWith(prefix: String): Self[A]
 
     /** Prefixes all column names with `EXCLUDED`, which is a special SQL table
-     * name when resolving insert/update conflicts.
-     *
-     * Example: {{{
-     * sql"""
-     *   ${t.Row.insertSqlFor(t)} ON CONFLICT (${t.userId},
-     *   ${t.weaponId}) DO UPDATE SET ${t.kills} = ${t.kills} + ${t.kills.excluded}
-     * """ }}}
-     */
+      * name when resolving insert/update conflicts.
+      *
+      * Example: {{{ sql""" ${t.Row.insertSqlFor(t)} ON CONFLICT (${t.userId},
+      * ${t.weaponId}) DO UPDATE SET ${t.kills} = ${t.kills} +
+      * ${t.kills.excluded} """ }}}
+      */
     lazy val excluded: Self[A] = prefixedWith("EXCLUDED")
   }
 

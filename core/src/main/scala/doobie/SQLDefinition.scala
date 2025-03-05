@@ -15,11 +15,13 @@ import scala.util.NotGiven
 trait SQLDefinitionRead[A] extends TypedMultiFragment.Prefixable[A] { self =>
   type Self[X] <: SQLDefinitionRead[X]
 
-  /** To allow widening the type of [[Column]] and similar ones to [[SQLDefinitionRead]].
-   *
-   * This is useful when working with tuples of [[SQLDefinition]]s, because
-   * `(Column[Int], Column[String])` is not the same thing as `(SQLDefinitionRead[Int], SQLDefinitionRead[String])`.
-   */
+  /** To allow widening the type of [[Column]] and similar ones to
+    * [[SQLDefinitionRead]].
+    *
+    * This is useful when working with tuples of [[SQLDefinition]]s, because
+    * `(Column[Int], Column[String])` is not the same thing as
+    * `(SQLDefinitionRead[Int], SQLDefinitionRead[String])`.
+    */
   inline def sqlDefr: SQLDefinitionRead[A] = this
 
   /** SQL that lists all of the columns to get this SQL result. */
@@ -32,16 +34,21 @@ trait SQLDefinitionRead[A] extends TypedMultiFragment.Prefixable[A] { self =>
 
   given Read[A] = read
 
-  /** Changes the type of the definition. The change cannot fail. Useful for wrapper types. */
-  def map[B](mapper: A => B): SQLDefinitionRead[B] = SQLDefinitionRead.Mapped(this, mapper)
+  /** Changes the type of the definition. The change cannot fail. Useful for
+    * wrapper types.
+    */
+  def map[B](mapper: A => B): SQLDefinitionRead[B] =
+    SQLDefinitionRead.Mapped(this, mapper)
 }
 object SQLDefinitionRead {
-  private class Mapped[A, B](val self: SQLDefinitionRead[A], val mapper: A => B) extends SQLDefinitionRead[B] {
+  private class Mapped[A, B](val self: SQLDefinitionRead[A], val mapper: A => B)
+      extends SQLDefinitionRead[B] {
     override type Self[X] = SQLDefinitionRead[X]
 
     override def columns: NonEmptyVector[Column[?]] = self.columns
 
-    override def prefixedWith(prefix: String): SQLDefinitionRead[B] = Mapped(self.prefixedWith(prefix), mapper)
+    override def prefixedWith(prefix: String): SQLDefinitionRead[B] =
+      Mapped(self.prefixedWith(prefix), mapper)
 
     override def fragment: Fragment = self.fragment
 
@@ -65,20 +72,21 @@ trait SQLDefinition[A] extends SQLDefinitionRead[A] { self =>
     * [[SQLDefinition]].
     *
     * This is useful when working with tuples of [[SQLDefinition]]s, because
-    * `(Column[Int], Column[String])` is not the same thing as `(SQLDefinition[Int], SQLDefinition[String])`.
+    * `(Column[Int], Column[String])` is not the same thing as
+    * `(SQLDefinition[Int], SQLDefinition[String])`.
     */
   inline def sqlDef: SQLDefinition[A] = this
 
   /** The SQL [[Fragment]] containing all of the [[Column.name]] joined with
-   * ",".
-   *
-   * Useful in preparing batch inserts.
-   * {{{
-   *   Update[Person](
-   *     sql"INSERT INTO $personTable (${person.columnsSql}) VALUES (${person.valuesSql})".rawSql
-   *   ).updateMany(persons)
-   * }}}
-   */
+    * ",".
+    *
+    * Useful in preparing batch inserts.
+    * {{{
+    *   Update[Person](
+    *     sql"INSERT INTO $personTable (${person.columnsSql}) VALUES (${person.valuesSql})".rawSql
+    *   ).updateMany(persons)
+    * }}}
+    */
 //  lazy val columnsSql: Fragment = columns.map(_.sql).intercalate(fr",")
 
   def write: Write[A]
@@ -89,11 +97,11 @@ trait SQLDefinition[A] extends SQLDefinitionRead[A] { self =>
   def isOption: Boolean
 
   /** Creates an [[Option]] version of the [[SQLDefinition]], giving that it is
-   * not already an [[Option]].
-   *
-   * Useful when you are doing joins and want a non-nullable
-   * [[Column]]/[[SQLDefinition]] to be represented as a nullable one.
-   */
+    * not already an [[Option]].
+    *
+    * Useful when you are doing joins and want a non-nullable
+    * [[Column]]/[[SQLDefinition]] to be represented as a nullable one.
+    */
   def option[B](using @unused ng: NotGiven[A =:= Option[B]]): Self[Option[A]]
 
   /** Changes the type of the definition. The change must be invariant and
@@ -145,7 +153,8 @@ trait SQLDefinition[A] extends SQLDefinitionRead[A] { self =>
   }
 }
 object SQLDefinition {
-  given write[A](using definition: SQLDefinition[A]): Write[A] = definition.write
+  given write[A](using definition: SQLDefinition[A]): Write[A] =
+    definition.write
   given toWrite[A]: Conversion[SQLDefinition[A], Write[A]] = _.write
 
   given invariant: Invariant[SQLDefinition] with {

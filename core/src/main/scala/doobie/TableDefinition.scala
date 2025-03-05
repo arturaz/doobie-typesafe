@@ -123,7 +123,9 @@ case class AliasedTableDefinition[T <: TableDefinition](
   /** [[alias]] as a [[Fragment]]. */
   def aliasFr: Fragment = Fragment.const0(alias)
 
-  /** Prevents reinitialization of aliased valuess over successive [[prefix]] invocations. */
+  /** Prevents reinitialization of aliased valuess over successive [[prefix]]
+    * invocations.
+    */
   private val aliasedDefinitionsCache =
     collection.concurrent.TrieMap.empty[Any, Any]
 
