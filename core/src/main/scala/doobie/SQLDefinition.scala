@@ -7,10 +7,10 @@ import doobie.*
 import doobie.implicits.*
 import doobie.syntax.SqlInterpolator.SingleFragment
 
+import scala.annotation.nowarn
 import scala.annotation.targetName
 import scala.annotation.unused
 import scala.util.NotGiven
-import scala.annotation.nowarn
 
 /** The read-only side of [[SQLDefinition]]. */
 trait SQLDefinitionRead[A] extends TypedMultiFragment.Prefixable[A] { self =>
