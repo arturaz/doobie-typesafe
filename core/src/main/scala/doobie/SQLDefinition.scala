@@ -10,6 +10,7 @@ import doobie.syntax.SqlInterpolator.SingleFragment
 import scala.annotation.targetName
 import scala.annotation.unused
 import scala.util.NotGiven
+import scala.annotation.nowarn
 
 /** The read-only side of [[SQLDefinition]]. */
 trait SQLDefinitionRead[A] extends TypedMultiFragment.Prefixable[A] { self =>
@@ -41,6 +42,7 @@ trait SQLDefinitionRead[A] extends TypedMultiFragment.Prefixable[A] { self =>
     SQLDefinitionRead.Mapped(this, mapper)
 }
 object SQLDefinitionRead {
+  @nowarn("msg=unused") // false positive
   private class Mapped[A, B](val self: SQLDefinitionRead[A], val mapper: A => B)
       extends SQLDefinitionRead[B] {
     override type Self[X] = SQLDefinitionRead[X]
