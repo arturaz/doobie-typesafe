@@ -186,12 +186,6 @@ object Composite {
       override def toString =
         s"Composite(columns: ${columns.iterator.map(_.rawName).mkString(", ")})"
 
-      /** Amount of results to skip from the [[ResultSet]] when reading the Nth
-        * tuple element.
-        */
-      lazy val sqlResultAccumulatedLengths: Vector[Int] =
-        TypedMultiFragment.sqlResultAccumulatedLengths(sqlDefinitions.toVector)
-
       override lazy val columns: NonEmptyVector[Column[?]] =
         sqlDefinitions.flatMap(_.columns)
 
