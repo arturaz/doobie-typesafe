@@ -35,7 +35,7 @@ lazy val core = project
     ),
     addCommandAlias(
       "prepareCi",
-      "scalafmtAll;scalafmtSbt;scalafixAll;test;docs/tlSite;mimaReportBinaryIssues"
+      "scalafmtAll;scalafmtSbt;scalafixAll;test;docs/tlSite;mimaReportBinaryIssues;githubWorkflowCheck"
     )
   )
 
