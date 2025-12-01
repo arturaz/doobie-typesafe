@@ -108,8 +108,8 @@ ${Users.updateTable(
 )} WHERE </span><span class="substitution">${Users.id === 42}</span><span class="string-literal">
 &quot;&quot;&quot;</span><span>
 </span><span class="comment">// res0: Fragment = Fragment(&quot;
-//       UPDATE users SET first_name = ?, last_name = ? WHERE id = ?
-//       &quot;)
+//   UPDATE users SET first_name = ?, last_name = ? WHERE id = ?
+//   &quot;)
 </span><span>
 </span><span class="comment">// Or using a collection:
 </span><span class="string-literal">sql&quot;&quot;&quot;
@@ -119,8 +119,8 @@ ${Users.updateTable(NonEmptyVector.of(
 ))} WHERE </span><span class="substitution">${Users.id === 42}</span><span class="string-literal">
 &quot;&quot;&quot;</span><span>
 </span><span class="comment">// res1: Fragment = Fragment(&quot;
-//       UPDATE users SET first_name = ?, last_name = ? WHERE id = ?
-//       &quot;)</span></code></pre>
+//   UPDATE users SET first_name = ?, last_name = ? WHERE id = ?
+//   &quot;)</span></code></pre>
         <p>You can use the composite columns as well:</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">data</span><span>.</span><span class="type-name">NonEmptyVector</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">doobie</span><span>.*
@@ -131,9 +131,9 @@ ${Users.updateTable(NonEmptyVector.of(
 WHERE </span><span class="substitution">${Users.id === 42}</span><span class="string-literal">
 &quot;&quot;&quot;</span><span>
 </span><span class="comment">// res2: Fragment = Fragment(&quot;
-//       UPDATE users SET first_name = ?, last_name = ?, nickname = ?
-//       WHERE id = ?
-//       &quot;)</span></code></pre>
+//   UPDATE users SET first_name = ?, last_name = ?, nickname = ?
+//   WHERE id = ?
+//   &quot;)</span></code></pre>
 
         
 <hr class="footer-rule"/>
