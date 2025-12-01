@@ -1,4 +1,4 @@
-ThisBuild / tlBaseVersion := "0.4"
+ThisBuild / tlBaseVersion := "0.5"
 
 ThisBuild / organization := "io.github.arturaz"
 ThisBuild / organizationName := "arturaz"
@@ -9,7 +9,7 @@ ThisBuild / developers ++= List(
   tlGitHubDev("arturaz", "Artūras Šlajus")
 )
 
-ThisBuild / scalaVersion := "3.3.5"
+ThisBuild / scalaVersion := "3.3.7"
 ThisBuild / scalacOptions ++= Seq(
   "-language:implicitConversions",
   "-Werror"
@@ -31,7 +31,7 @@ lazy val core = project
     description := "Typesafe table definitions for doobie",
     libraryDependencies ++= Seq(
       // https://mvnrepository.com/artifact/org.tpolecat/doobie-core
-      "org.tpolecat" %% "doobie-core" % "1.0.0-RC8"
+      "org.tpolecat" %% "doobie-core" % "1.0.0-RC11"
     ),
     addCommandAlias(
       "prepareCi",
@@ -48,11 +48,11 @@ lazy val tests = project
     description := "Tests for doobie-typesafe",
     libraryDependencies ++= Seq(
       // https://mvnrepository.com/artifact/org.scalameta/munit
-      "org.scalameta" %% "munit" % "1.0.3" % Test,
+      "org.scalameta" %% "munit" % "1.2.1" % Test,
       // https://mvnrepository.com/artifact/org.typelevel/munit-cats-effect
-      "org.typelevel" %% "munit-cats-effect" % "2.0.0" % Test,
+      "org.typelevel" %% "munit-cats-effect" % "2.1.0" % Test,
       // https://mvnrepository.com/artifact/com.h2database/h2
-      "com.h2database" % "h2" % "2.3.232" % Test
+      "com.h2database" % "h2" % "2.4.240" % Test
     )
   )
 

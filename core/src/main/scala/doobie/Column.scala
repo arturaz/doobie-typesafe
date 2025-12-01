@@ -74,8 +74,8 @@ case class Column[A] private (
       @unused ng: NotGiven[A =:= Option[B]]
   ): Column[Option[A]] =
     Column[Option[A]](rawName, prefix, isOption = true)(using
-      read = Read.fromGetOption(self.get),
-      write = Write.fromPutOption(self.put)
+      read = Read.optionalFromRead(using Read.fromGet(using self.get)),
+      write = Write.optionalFromWrite(using Write.fromPut(using self.put))
     )
 
   override def prefixedWith(prefix: String): Column[A] =
