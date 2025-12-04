@@ -1,7 +1,8 @@
 package doobie
 
 import doobie.implicits.*
-import doobie.util.{DBFixture, Helpers}
+import doobie.util.DBFixture
+import doobie.util.Helpers
 import munit.*
 
 class ColumnTest extends CatsEffectSuite with DBFixture with Helpers {
