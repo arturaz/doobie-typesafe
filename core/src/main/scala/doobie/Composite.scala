@@ -251,7 +251,14 @@ object Composite {
       override def option[R1](using
           @unused ng: NotGiven[R =:= Option[R1]]
       ): SQLDefinition[Option[R]] = {
-        unsafe(sqlDefinitions.map(_.option), isOption = true) { iterator =>
+        unsafe(
+          {
+            val mapped = sqlDefinitions.map(_.option)
+            println(s"sqlDefinitions: $sqlDefinitions\nmapped: $mapped")
+            mapped
+          },
+          isOption = true
+        ) { iterator =>
           enum Value {
             case Raw(v: Any)
 

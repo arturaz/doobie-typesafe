@@ -55,21 +55,23 @@ case class Column[A] private (
     show"Column($s$isOpt)"
   }
 
-  /** 
-   * Returns the [[Get]] that is backing the [[read]].
-   *
-   * @note this [[Get]] will not have any transformations applied to it. 
-   **/
+  /** Returns the [[Get]] that is backing the [[read]].
+    *
+    * @note
+    *   this [[Get]] will not have any transformations applied to it, you
+    *   probably want to use [[read]] instead.
+    */
   lazy val get: Get[A] = {
     // This is somewhat unsafe, but given that a column is a single column, it should be fine.
     read.gets.head._1.asInstanceOf[Get[A]]
   }
 
-  /** 
-   * Returns the [[Put]] that is backing the [[write]].
-   * 
-   * @note this [[Put]] will not have any transformations applied to it.  
-   **/
+  /** Returns the [[Put]] that is backing the [[write]].
+    *
+    * @note
+    *   this [[Put]] will not have any transformations applied to it, you
+    *   probably want to use [[write]] instead.
+    */
   lazy val put: Put[A] = {
     // This is somewhat unsafe, but given that a column is a single column, it should be fine.
     write.puts.head._1.asInstanceOf[Put[A]]
@@ -80,11 +82,18 @@ case class Column[A] private (
     */
   override def option[B](using
       @unused ng: NotGiven[A =:= Option[B]]
-  ): Column[Option[A]] =
-    Column[Option[A]](rawName, prefix, isOption = true)(using
-      read = self.read.toOpt,
-      write = self.write.toOpt
-    )
+  ): Column[Option[A]] = {
+
+    /** We can not trust the [[NotGiven]] constraint here, as we do some dynamic
+      * type-casting internally in the library.
+      */
+    if (isOption) this.asInstanceOf
+    else
+      Column[Option[A]](rawName, prefix, isOption = true)(using
+        read = self.read.toOpt,
+        write = self.write.toOpt
+      )
+  }
 
   override def prefixedWith(prefix: String): Column[A] =
     copy(prefix = Some(prefix))
