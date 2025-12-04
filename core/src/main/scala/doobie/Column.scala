@@ -55,18 +55,6 @@ case class Column[A] private (
     show"Column($s$isOpt)"
   }
 
-  /** Returns the [[Get]] that is backing the [[read]]. */
-  lazy val get: Get[A] = {
-    // This is somewhat unsafe, but given that a column is a single column, it should be fine.
-    read.gets.head._1.asInstanceOf[Get[A]]
-  }
-
-  /** Returns the [[Put]] that is backing the [[write]]. */
-  lazy val put: Put[A] = {
-    // This is somewhat unsafe, but given that a column is a single column, it should be fine.
-    write.puts.head._1.asInstanceOf[Put[A]]
-  }
-
   /** Creates an [[Option]] version of the [[Column]], giving that it is not
     * already an [[Option]].
     */
@@ -74,8 +62,8 @@ case class Column[A] private (
       @unused ng: NotGiven[A =:= Option[B]]
   ): Column[Option[A]] =
     Column[Option[A]](rawName, prefix, isOption = true)(using
-      read = Read.optionalFromRead(using Read.fromGet(using self.get)),
-      write = Write.optionalFromWrite(using Write.fromPut(using self.put))
+      read = Read.optionalFromRead(using self.read),
+      write = Write.optionalFromWrite(using self.write)
     )
 
   override def prefixedWith(prefix: String): Column[A] =

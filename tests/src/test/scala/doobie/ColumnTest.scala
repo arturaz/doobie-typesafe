@@ -52,4 +52,19 @@ class ColumnTest extends CatsEffectSuite with DBFixture with Helpers {
     val actual = sql.transact(xa)
     actual.assertEquals((Age(100), "100"))
   }
+
+  withTable.test("imap with option") { xa =>
+    val ageAsString = Person.ageCol.imap(_.age.toString)(s => Age(s.toInt))
+
+    val table = Person
+    val columns = Columns((Person.ageCol, ageAsString.option))
+    val sql = for {
+      _ <- table.insertInto(person ==> Person("Alice", Age(42))).update.run
+      _ <- table.updateTable(ageAsString --> "100").update.run
+      result <- sql"select $columns from $table".queryOf(columns).unique
+    } yield result
+
+    val actual = sql.transact(xa)
+    actual.assertEquals((Age(100), Some("100")))
+  }
 }
