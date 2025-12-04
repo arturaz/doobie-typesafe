@@ -117,7 +117,7 @@
 </span><span class="type-name">Users</span><span>.</span><span class="identifier">insertInto</span><span>(</span><span class="type-name">Users</span><span>.</span><span class="type-name">Row</span><span> ==&gt; </span><span class="type-name">Users</span><span>.</span><span class="type-name">Row</span><span>(</span><span class="number-literal">42</span><span>, </span><span class="type-name">Users</span><span>.</span><span class="type-name">Names</span><span>(</span><span class="string-literal">&quot;John&quot;</span><span>, </span><span class="string-literal">&quot;Doe&quot;</span><span>, </span><span class="type-name">Some</span><span>(</span><span class="string-literal">&quot;Johnny&quot;</span><span>))))
 </span><span class="comment">// res2: Fragment = Fragment(&quot;INSERT INTO users (id, first_name, last_name, nickname) VALUES (?, ?, ?, ?)&quot;)
 </span><span class="type-name">Users</span><span>.</span><span class="type-name">Row</span><span>.</span><span class="identifier">insert</span><span>.</span><span class="identifier">toUpdate0</span><span>(</span><span class="type-name">Users</span><span>.</span><span class="type-name">Row</span><span>(</span><span class="number-literal">42</span><span>, </span><span class="type-name">Users</span><span>.</span><span class="type-name">Names</span><span>(</span><span class="string-literal">&quot;John&quot;</span><span>, </span><span class="string-literal">&quot;Doe&quot;</span><span>, </span><span class="type-name">Some</span><span>(</span><span class="string-literal">&quot;Johnny&quot;</span><span>))))
-</span><span class="comment">// res3: Update0 = doobie.util.update$Update$$anon$3@31f5483d
+</span><span class="comment">// res3: Update0 = doobie.util.update$Update$$anon$3@77878c44
 </span><span>
 </span><span class="comment">// Batch insert.
 </span><span class="type-name">Users</span><span>.</span><span class="type-name">Row</span><span>.</span><span class="identifier">insert</span><span>.</span><span class="identifier">updateMany</span><span>(</span><span class="type-name">NonEmptyVector</span><span>.</span><span class="identifier">of</span><span>(
@@ -126,7 +126,7 @@
 ))
 </span><span class="comment">// res4: Free[[A &gt;: Nothing &lt;: Any] =&gt; ConnectionOp[A], Int] = Suspend(
 //   a = Uncancelable(
-//     body = cats.effect.kernel.MonadCancel$$Lambda/0x00007f8702340980@67a8cb8b
+//     body = cats.effect.kernel.MonadCancel$$Lambda/0x00007f25ea3425b0@17757153
 //   )
 // )</span></code></pre>
 
