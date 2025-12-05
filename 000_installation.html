@@ -96,23 +96,23 @@
 
         <h1 id="installation" class="title">Installation</h1>
         <p>Add the following to your <code>build.sbt</code>:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> += </span><span class="string-literal">&quot;io.github.arturaz&quot;</span><span> %% </span><span class="string-literal">&quot;doobie-typesafe&quot;</span><span> % </span><span class="string-literal">&quot;0.5.0&quot;</span></code></pre>
-        <p>Or <code>build.sc</code> if you are using <a href="https://mill-build.com">mill</a>:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">override</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">ivyDeps</span><span> = </span><span class="type-name">Agg</span><span>(
-  </span><span class="string-literal">ivy&quot;io.github.arturaz::doobie-typesafe:0.5.0&quot;</span><span>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> += </span><span class="string-literal">&quot;io.github.arturaz&quot;</span><span> %% </span><span class="string-literal">&quot;doobie-typesafe&quot;</span><span> % </span><span class="string-literal">&quot;0.5.1&quot;</span></code></pre>
+        <p>Or <code>build.mill</code> if you are using <a href="https://mill-build.com">mill</a>:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">override</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">mvnDeps</span><span> = </span><span class="type-name">Agg</span><span>(
+  </span><span class="string-literal">mvn&quot;io.github.arturaz::doobie-typesafe:0.5.1&quot;</span><span>
 )</span></code></pre>
         <p>The code from <code>main</code> branch can be obtained with:</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">resolvers</span><span> ++= </span><span class="type-name">Resolver</span><span>.</span><span class="identifier">sonatypeOssRepos</span><span>(</span><span class="string-literal">&quot;snapshots&quot;</span><span>)
-</span><span class="identifier">libraryDependencies</span><span> += </span><span class="string-literal">&quot;io.github.arturaz&quot;</span><span> %% </span><span class="string-literal">&quot;doobie-typesafe&quot;</span><span> % </span><span class="string-literal">&quot;0.5.0-5-2a32a78-SNAPSHOT&quot;</span></code></pre>
+</span><span class="identifier">libraryDependencies</span><span> += </span><span class="string-literal">&quot;io.github.arturaz&quot;</span><span> %% </span><span class="string-literal">&quot;doobie-typesafe&quot;</span><span> % </span><span class="string-literal">&quot;0.5.1-1-6141fa6-SNAPSHOT&quot;</span></code></pre>
         <p>For <a href="https://mill-build.com">mill</a>:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span>  </span><span class="keyword">override</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">repositoriesTask</span><span> = </span><span class="type-name">T</span><span>.</span><span class="identifier">task</span><span> {
-    </span><span class="keyword">super</span><span>.</span><span class="identifier">repositoriesTask</span><span>() ++ </span><span class="type-name">Seq</span><span>(
-      </span><span class="identifier">coursier</span><span>.</span><span class="type-name">Repositories</span><span>.</span><span class="identifier">sonatype</span><span>(</span><span class="string-literal">&quot;snapshots&quot;</span><span>)
-    )
-  }
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">override</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">repositoriesTask</span><span> = </span><span class="type-name">T</span><span>.</span><span class="identifier">task</span><span> {
+  </span><span class="keyword">super</span><span>.</span><span class="identifier">repositoriesTask</span><span>() ++ </span><span class="type-name">Seq</span><span>(
+    </span><span class="identifier">coursier</span><span>.</span><span class="type-name">Repositories</span><span>.</span><span class="identifier">sonatype</span><span>(</span><span class="string-literal">&quot;snapshots&quot;</span><span>)
+  )
+}
 
-</span><span class="keyword">override</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">ivyDeps</span><span> = </span><span class="type-name">Agg</span><span>(
-  </span><span class="string-literal">ivy&quot;io.github.arturaz::doobie-typesafe:0.5.0-5-2a32a78-SNAPSHOT&quot;</span><span>
+</span><span class="keyword">override</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">mvnDeps</span><span> = </span><span class="type-name">Agg</span><span>(
+  </span><span class="string-literal">mvn&quot;io.github.arturaz::doobie-typesafe:0.5.1-1-6141fa6-SNAPSHOT&quot;</span><span>
 )</span></code></pre>
         <p><strong>The library is only published for Scala 3</strong> due to the use of 
         <a href="https://docs.scala-lang.org/scala3/reference/new-types/match-types.html">Scala 3 match types</a>.</p>
