@@ -6,11 +6,11 @@ Add the following to your `build.sbt`:
 libraryDependencies += "io.github.arturaz" %% "doobie-typesafe" % "@VERSION@"
 ```
 
-Or `build.sc` if you are using [mill](https://mill-build.com):
+Or `build.mill` if you are using [mill](https://mill-build.com):
 
 ```scala
-override def ivyDeps = Agg(
-  ivy"io.github.arturaz::doobie-typesafe:@VERSION@"
+override def mvnDeps = Agg(
+  mvn"io.github.arturaz::doobie-typesafe:@VERSION@"
 )
 ```
 
@@ -22,14 +22,14 @@ libraryDependencies += "io.github.arturaz" %% "doobie-typesafe" % "@SNAPSHOT_VER
 
 For [mill](https://mill-build.com):
 ```scala
-  override def repositoriesTask = T.task {
-    super.repositoriesTask() ++ Seq(
-      coursier.Repositories.sonatype("snapshots")
-    )
-  }
+override def repositoriesTask = T.task {
+  super.repositoriesTask() ++ Seq(
+    coursier.Repositories.sonatype("snapshots")
+  )
+}
 
-override def ivyDeps = Agg(
-  ivy"io.github.arturaz::doobie-typesafe:@SNAPSHOT_VERSION@"
+override def mvnDeps = Agg(
+  mvn"io.github.arturaz::doobie-typesafe:@SNAPSHOT_VERSION@"
 )
 ```
 
